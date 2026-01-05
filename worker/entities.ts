@@ -1,41 +1,50 @@
-/**
- * Minimal real-world demo: One Durable Object instance per entity (User, ChatBoard), with Indexes for listing.
- */
 import { IndexedEntity } from "./core-utils";
-import type { User, Chat, ChatMessage } from "@shared/types";
-import { MOCK_CHAT_MESSAGES, MOCK_CHATS, MOCK_USERS } from "@shared/mock-data";
-
-// USER ENTITY: one DO instance per user
+import type { User, Tenant, UserProfile, Plan } from "@shared/types";
+import { MOCK_USERS, MOCK_TENANTS, MOCK_PLANS } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: User = { id: "", name: "" };
+  static readonly initialState: User = { id: "", name: "", email: "", planId: "starter" };
   static seedData = MOCK_USERS;
-}
-
-// CHAT BOARD ENTITY: one DO instance per chat board, stores its own messages
-export type ChatBoardState = Chat & { messages: ChatMessage[] };
-
-const SEED_CHAT_BOARDS: ChatBoardState[] = MOCK_CHATS.map(c => ({
-  ...c,
-  messages: MOCK_CHAT_MESSAGES.filter(m => m.chatId === c.id),
-}));
-
-export class ChatBoardEntity extends IndexedEntity<ChatBoardState> {
-  static readonly entityName = "chat";
-  static readonly indexName = "chats";
-  static readonly initialState: ChatBoardState = { id: "", title: "", messages: [] };
-  static seedData = SEED_CHAT_BOARDS;
-
-  async listMessages(): Promise<ChatMessage[]> {
-    const { messages } = await this.getState();
-    return messages;
-  }
-
-  async sendMessage(userId: string, text: string): Promise<ChatMessage> {
-    const msg: ChatMessage = { id: crypto.randomUUID(), chatId: this.id, userId, text, ts: Date.now() };
-    await this.mutate(s => ({ ...s, messages: [...s.messages, msg] }));
-    return msg;
+  async getProfile(env: any): Promise<UserProfile> {
+    const state = await this.getState();
+    const plan = MOCK_PLANS.find(p => p.id === state.planId) || MOCK_PLANS[0];
+    const tenants = await TenantEntity.list(env);
+    const userTenants = tenants.items.filter(t => t.ownerId === this.id);
+    return {
+      ...state,
+      plan,
+      tenantCount: userTenants.length
+    };
   }
 }
-
+export class TenantEntity extends IndexedEntity<Tenant> {
+  static readonly entityName = "tenant";
+  static readonly indexName = "tenants";
+  static readonly initialState: Tenant = {
+    id: "",
+    name: "",
+    domain: "",
+    licenseKey: "",
+    status: "active",
+    ownerId: "",
+    createdAt: 0
+  };
+  static seedData = MOCK_TENANTS;
+  static async createForUser(env: any, data: { name: string; domain: string; ownerId: string }): Promise<Tenant> {
+    const id = crypto.randomUUID();
+    const licenseKey = `GF-${crypto.randomUUID().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const tenant: Tenant = {
+      ...data,
+      id,
+      licenseKey,
+      status: 'active',
+      createdAt: Date.now()
+    };
+    return await this.create(env, tenant);
+  }
+  async validate(domain: string): Promise<boolean> {
+    const state = await this.getState();
+    return state.status === 'active' && state.domain === domain;
+  }
+}
