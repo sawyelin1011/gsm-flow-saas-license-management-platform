@@ -1,7 +1,7 @@
 import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
 enableMapSet();
-import { StrictMode } from 'react'
+import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {
   createBrowserRouter,
@@ -20,12 +20,19 @@ import { ClientHome } from '@/pages/dashboard/ClientHome';
 import { Tenants } from '@/pages/dashboard/Tenants';
 import { Billing } from '@/pages/dashboard/Billing';
 import { Settings } from '@/pages/dashboard/Settings';
+import { Support } from '@/pages/dashboard/Support';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { UserManagement } from '@/pages/admin/UserManagement';
 import { ApiDocs } from '@/pages/docs/ApiDocs';
-
 import { Toaster } from '@/components/ui/sonner';
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 const router = createBrowserRouter([
   {
     path: "/",
@@ -62,6 +69,10 @@ const router = createBrowserRouter([
       {
         path: "billing",
         element: <Billing />,
+      },
+      {
+        path: "support",
+        element: <Support />,
       },
       {
         path: "settings",

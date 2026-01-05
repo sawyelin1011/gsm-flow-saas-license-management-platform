@@ -40,6 +40,17 @@ export interface LicenseValidation {
   };
   message?: string;
 }
+export type SupportTicketStatus = 'open' | 'closed';
+export type SupportTicketCategory = 'technical' | 'billing' | 'account';
+export interface SupportTicket {
+  id: string;
+  userId: string;
+  subject: string;
+  message: string;
+  status: SupportTicketStatus;
+  category: SupportTicketCategory;
+  createdAt: number;
+}
 // Keep legacy for template compatibility if needed elsewhere
 export interface Chat {
   id: string;

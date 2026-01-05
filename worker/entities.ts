@@ -1,5 +1,5 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Tenant, UserProfile, Plan } from "@shared/types";
+import type { User, Tenant, UserProfile, Plan, SupportTicket } from "@shared/types";
 import { MOCK_USERS, MOCK_TENANTS, MOCK_PLANS } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<User> {
   static readonly entityName = "user";
@@ -46,5 +46,22 @@ export class TenantEntity extends IndexedEntity<Tenant> {
   async validate(domain: string): Promise<boolean> {
     const state = await this.getState();
     return state.status === 'active' && state.domain === domain;
+  }
+}
+export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
+  static readonly entityName = "ticket";
+  static readonly indexName = "tickets";
+  static readonly initialState: SupportTicket = {
+    id: "",
+    userId: "",
+    subject: "",
+    message: "",
+    status: "open",
+    category: "technical",
+    createdAt: 0
+  };
+  static async getTicketsByUser(env: any, userId: string): Promise<SupportTicket[]> {
+    const result = await this.list(env);
+    return result.items.filter(t => t.userId === userId);
   }
 }
