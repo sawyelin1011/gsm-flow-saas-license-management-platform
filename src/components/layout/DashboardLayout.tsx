@@ -6,7 +6,9 @@ import {
   Settings, 
   LogOut, 
   ShieldCheck,
-  Menu
+  Menu,
+  ShieldAlert,
+  BookOpen
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -34,6 +36,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
     { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
   ];
+
+  const adminItems = [
+    { title: 'Global Overview', icon: ShieldAlert, href: '/dashboard/admin' },
+    { title: 'User Management', icon: ShieldCheck, href: '/dashboard/admin/users' },
+  ];
+
+  const isAdmin = true; // Prototype logic: current user is admin
+
   return (
     <SidebarProvider>
       <Sidebar className="border-r border-border/50">
@@ -66,6 +76,43 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+
+          {isAdmin && (
+            <div className="mt-8">
+              <div className="px-4 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">System Admin</p>
+              </div>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === item.href}
+                      className={cn(
+                        "h-10 px-4",
+                        location.pathname === item.href ? "bg-amber-500 text-white hover:bg-amber-600" : "hover:bg-accent"
+                      )}
+                    >
+                      <Link to={item.href}>
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </div>
+          )}
+
+          <div className="mt-auto pt-4">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="h-10 px-4">
+                  <Link to="/docs"><BookOpen className="w-5 h-5" /> <span>API Documentation</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
         </SidebarContent>
         <SidebarFooter className="p-4 border-t border-border/50">
           <div className="flex items-center gap-3 px-2 mb-4">

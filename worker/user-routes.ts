@@ -2,11 +2,14 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, TenantEntity } from "./entities";
 import { ok, bad, notFound, isStr } from './core-utils';
+import { MOCK_USERS } from "@shared/mock-data";
+
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // USER PROFILE
   app.get('/api/me', async (c) => {
-    // In a real app, this ID comes from auth context/session
-    const userId = 'admin-demo'; 
+    // In a real app, this ID comes from auth context/session.
+    // For this prototype, 'admin-demo' is our privileged user.
+    const userId = 'admin-demo';
     const user = new UserEntity(c.env, userId);
     if (!await user.exists()) {
       await UserEntity.ensureSeed(c.env);
@@ -52,7 +55,45 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
   });
   app.delete('/api/tenants/:id', async (c) => ok(c, { 
-    id: c.req.param('id'), 
-    deleted: await TenantEntity.delete(c.env, c.req.param('id')) 
+    id: c.req.param('id'),
+    deleted: await TenantEntity.delete(c.env, c.req.param('id'))
   }));
+
+  // ADMIN ROUTES (Privileged access)
+  const adminMiddleware = async (c: any, next: any) => {
+    const userId = 'admin-demo'; // Mocked auth
+    if (userId !== 'admin-demo') return bad(c, 'unauthorized');
+    await next();
+  };
+
+  app.get('/api/admin/stats', adminMiddleware, async (c) => {
+    const users = await UserEntity.list(c.env);
+    const tenants = await TenantEntity.list(c.env);
+    return ok(c, {
+      userCount: users.items.length,
+      tenantCount: tenants.items.length,
+      revenue: users.items.length * 149, // Mock calculation
+      trafficTrend: 'up'
+    });
+  });
+
+  app.get('/api/admin/users', adminMiddleware, async (c) => {
+    const list = await UserEntity.list(c.env);
+    return ok(c, list.items);
+  });
+
+  app.get('/api/admin/tenants', adminMiddleware, async (c) => {
+    const list = await TenantEntity.list(c.env);
+    return ok(c, list);
+  });
+
+  app.post('/api/admin/users/:id/plan', adminMiddleware, async (c) => {
+    const userId = c.req.param('id');
+    const { planId } = await c.req.json() as { planId: string };
+    const user = new UserEntity(c.env, userId);
+    if (!await user.exists()) return notFound(c, 'user not found');
+    
+    await user.patch({ planId });
+    return ok(c, { success: true });
+  });
 }

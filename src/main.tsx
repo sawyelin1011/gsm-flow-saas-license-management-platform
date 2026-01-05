@@ -19,6 +19,11 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ClientHome } from '@/pages/dashboard/ClientHome';
 import { Tenants } from '@/pages/dashboard/Tenants';
 import { Billing } from '@/pages/dashboard/Billing';
+import { Settings } from '@/pages/dashboard/Settings';
+import { AdminDashboard } from '@/pages/admin/AdminDashboard';
+import { UserManagement } from '@/pages/admin/UserManagement';
+import { ApiDocs } from '@/pages/docs/ApiDocs';
+
 import { Toaster } from '@/components/ui/sonner';
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
@@ -30,6 +35,11 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Auth />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: "/docs",
+    element: <ApiDocs />,
     errorElement: <RouteErrorBoundary />,
   },
   {
@@ -55,8 +65,16 @@ const router = createBrowserRouter([
       },
       {
         path: "settings",
-        element: <div className="p-8 text-center text-muted-foreground">Settings are coming soon.</div>,
+        element: <Settings />,
       },
+      {
+        path: "admin",
+        element: <AdminDashboard />,
+      },
+      {
+        path: "admin/users",
+        element: <UserManagement />,
+      }
     ],
   },
 ]);
