@@ -51,6 +51,23 @@ export interface SupportTicket {
   category: SupportTicketCategory;
   createdAt: number;
 }
+export type InvoiceStatus = 'paid' | 'pending' | 'failed';
+export interface Invoice {
+  id: string;
+  userId: string;
+  amount: number;
+  date: number;
+  status: InvoiceStatus;
+  planName: string;
+  currency: string;
+}
+export interface UserDataExport {
+  profile: UserProfile;
+  tenants: Tenant[];
+  tickets: SupportTicket[];
+  invoices: Invoice[];
+  exportedAt: number;
+}
 // Keep legacy for template compatibility if needed elsewhere
 export interface Chat {
   id: string;
