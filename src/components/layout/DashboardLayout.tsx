@@ -43,16 +43,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { title: 'Global Overview', icon: ShieldAlert, href: '/dashboard/admin' },
     { title: 'User Management', icon: ShieldCheck, href: '/dashboard/admin/users' },
   ];
-  const isAdmin = true; // Shared mock user context simulates admin access
+  const isAdmin = true;
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <Sidebar collapsible="icon" className="border-r border-border/50 bg-sidebar">
+      <Sidebar 
+        collapsible="icon" 
+        className="border-r border-border/50 bg-sidebar transition-all duration-300 sm:flex"
+      >
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-3 px-2 overflow-hidden">
-            <div className="min-w-8 w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow">
+            <div className="min-w-8 w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden">GSM Flow</span>
+            <span className="font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden whitespace-nowrap">
+              GSM Flow
+            </span>
           </div>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -64,15 +69,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   isActive={location.pathname === item.href}
                   tooltip={item.title}
                   className={cn(
-                    "h-10 px-4 transition-all",
+                    "h-12 sm:h-10 px-4 transition-all",
                     location.pathname === item.href
                       ? "bg-primary/10 text-primary border-r-2 border-primary"
                       : "hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   <Link to={item.href}>
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
+                    <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -81,7 +86,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {isAdmin && (
             <div className="mt-8">
               <div className="px-4 mb-2 group-data-[collapsible=icon]:hidden">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">System Admin</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">System Admin</p>
               </div>
               <SidebarMenu>
                 {adminItems.map((item) => (
@@ -91,15 +96,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       isActive={location.pathname === item.href}
                       tooltip={item.title}
                       className={cn(
-                        "h-10 px-4 transition-all",
+                        "h-12 sm:h-10 px-4 transition-all",
                         location.pathname === item.href
                           ? "bg-primary/10 text-primary border-r-2 border-primary"
                           : "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
                       <Link to={item.href}>
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.title}</span>
+                        <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
+                        <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -110,10 +115,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="mt-auto pt-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-10 px-4" tooltip="API Documentation">
+                <SidebarMenuButton asChild className="h-12 sm:h-10 px-4" tooltip="API Documentation">
                   <Link to="/docs">
-                    <BookOpen className="w-5 h-5" />
-                    <span>API Documentation</span>
+                    <BookOpen className="w-6 h-6 sm:w-5 sm:h-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">API Documentation</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -133,18 +138,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-start text-muted-foreground hover:text-destructive h-9 px-2"
+            className="w-full justify-start text-muted-foreground hover:text-destructive h-10 sm:h-9 px-2"
             onClick={() => navigate('/')}
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-5 h-5 sm:w-4 sm:h-4 mr-2" />
             <span className="group-data-[collapsible=icon]:hidden">Logout</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-muted/5 min-h-screen">
+      <SidebarInset className="bg-muted/5 min-h-screen relative flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <SidebarTrigger className="hover:text-primary transition-colors" />
+            <SidebarTrigger className="hover:text-primary transition-colors h-10 w-10" />
             <div className="h-4 w-px bg-border hidden sm:block" />
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block">
               {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
@@ -154,7 +159,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <ThemeToggle className="static" />
           </div>
         </header>
-        <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           <div className="space-y-8 animate-fade-in">
             {children}
           </div>

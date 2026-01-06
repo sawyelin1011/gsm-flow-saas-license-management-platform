@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api-client';
@@ -45,7 +46,9 @@ export function Billing() {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Subscription status updated');
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Upgrade rejected'),
+    onError: (err: any) => {
+      toast.error(err?.message || 'Upgrade rejected. Please verify your node count.');
+    },
   });
   return (
     <div className="space-y-12">
@@ -53,25 +56,25 @@ export function Billing() {
         <h1 className="text-3xl font-bold tracking-tight">License Billing</h1>
         <p className="text-muted-foreground font-medium">Manage enterprise subscriptions and transaction history.</p>
       </div>
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className={cn(
-          "md:col-span-2 border-2 transition-all relative overflow-hidden",
+          "lg:col-span-2 border-2 transition-all relative overflow-hidden",
           profile?.planId !== 'starter' ? 'border-primary shadow-glow bg-primary/[0.02]' : 'border-border'
         )}>
           {profile?.planId !== 'starter' && (
-            <div className="absolute top-0 right-0 p-6 opacity-10">
-              <CreditCard className="w-24 h-24" />
+            <div className="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+              <CreditCard className="w-16 h-16 md:w-24 md:h-24" />
             </div>
           )}
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <CardTitle className="text-xl">Active Entitlement</CardTitle>
               <Badge className="bg-primary text-primary-foreground text-[10px] uppercase font-black tracking-[0.2em] px-3">{profile?.plan?.name}</Badge>
             </div>
             <CardDescription className="font-medium">Account status: Operational · Renewal Cycle: Monthly</CardDescription>
           </CardHeader>
           <CardContent className="space-y-8">
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-5 rounded-2xl border bg-card/50 shadow-sm">
                 <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-2">Cycle Rate</p>
                 <p className="text-3xl font-bold text-primary">${profile?.plan?.price}<span className="text-sm font-medium text-muted-foreground ml-1">/mo</span></p>
@@ -88,18 +91,18 @@ export function Billing() {
               <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-primary" /> Core Entitlements
               </h4>
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
                 {profile?.plan?.features.map((f) => (
                   <div key={f} className="flex items-center gap-3 text-sm font-medium group">
-                    <div className="w-2 h-2 rounded-full bg-primary/20 group-hover:bg-primary transition-colors" />
-                    <span>{f}</span>
+                    <div className="w-2 h-2 rounded-full bg-primary/20 group-hover:bg-primary transition-colors shrink-0" />
+                    <span className="truncate">{f}</span>
                   </div>
                 ))}
               </div>
             </div>
           </CardContent>
           <CardFooter className="border-t border-border/50 bg-muted/5 py-6">
-            <Button variant="outline" className="font-bold border-primary/20 hover:bg-primary/5">Adjust Payment Infrastructure</Button>
+            <Button variant="outline" className="font-bold border-primary/20 hover:bg-primary/5 w-full sm:w-auto">Adjust Payment Infrastructure</Button>
           </CardFooter>
         </Card>
         <div className="space-y-6">
@@ -132,46 +135,49 @@ export function Billing() {
           <h2 className="text-2xl font-bold tracking-tight">Financial Records</h2>
         </div>
         <Card className="border-border/50 shadow-sm overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/50 border-b border-border/50">
-              <TableRow>
-                <TableHead className="font-bold text-xs uppercase tracking-widest">Settlement Date</TableHead>
-                <TableHead className="font-bold text-xs uppercase tracking-widest">Allocation</TableHead>
-                <TableHead className="font-bold text-xs uppercase tracking-widest">Volume</TableHead>
-                <TableHead className="font-bold text-xs uppercase tracking-widest">Status</TableHead>
-                <TableHead className="text-right font-bold text-xs uppercase tracking-widest">Records</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoadingInvoices ? (
+          <ScrollArea className="w-full">
+            <Table>
+              <TableHeader className="bg-muted/50 border-b border-border/50">
                 <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
-                  </TableCell>
+                  <TableHead className="font-bold text-xs uppercase tracking-widest min-w-[120px]">Settlement Date</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-widest min-w-[120px]">Allocation</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-widest min-w-[100px]">Volume</TableHead>
+                  <TableHead className="font-bold text-xs uppercase tracking-widest min-w-[100px]">Status</TableHead>
+                  <TableHead className="text-right font-bold text-xs uppercase tracking-widest min-w-[120px]">Records</TableHead>
                 </TableRow>
-              ) : invoices?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-32 text-center font-medium text-muted-foreground italic">No historical transactions detected.</TableCell>
-                </TableRow>
-              ) : (
-                invoices?.map((invoice) => (
-                  <TableRow key={invoice.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="text-sm font-bold">{format(invoice.date, 'MMM dd, yyyy')}</TableCell>
-                    <TableCell className="text-[10px] font-black uppercase text-muted-foreground">{invoice.planName}</TableCell>
-                    <TableCell className="text-sm font-black text-primary">${invoice.amount}.00</TableCell>
-                    <TableCell>
-                      <Badge className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20 text-[10px] font-black h-5 uppercase tracking-widest">
-                        {invoice.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="h-9 px-4 font-bold text-xs hover:text-primary transition-all">Download PDF</Button>
+              </TableHeader>
+              <TableBody>
+                {isLoadingInvoices ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-32 text-center">
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" />
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : invoices?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-32 text-center font-medium text-muted-foreground italic">No historical transactions detected.</TableCell>
+                  </TableRow>
+                ) : (
+                  invoices?.map((invoice) => (
+                    <TableRow key={invoice.id} className="hover:bg-muted/30 transition-colors">
+                      <TableCell className="text-sm font-bold">{format(invoice.date, 'MMM dd, yyyy')}</TableCell>
+                      <TableCell className="text-[10px] font-black uppercase text-muted-foreground">{invoice.planName}</TableCell>
+                      <TableCell className="text-sm font-black text-primary">${invoice.amount}.00</TableCell>
+                      <TableCell>
+                        <Badge className="bg-cyan-500/10 text-cyan-500 border-cyan-500/20 text-[10px] font-black h-5 uppercase tracking-widest">
+                          {invoice.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" className="h-9 px-4 font-bold text-xs hover:text-primary transition-all">Download PDF</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </Card>
       </div>
       <div className="space-y-8 pt-8 border-t border-border/50">
@@ -181,7 +187,7 @@ export function Billing() {
           </div>
           <h2 className="text-2xl font-bold tracking-tight">Scale Capacity</h2>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {MOCK_PLANS.filter(p => p.id !== profile?.planId).map((plan) => (
             <Card key={plan.id} className="relative overflow-hidden group hover:border-primary transition-all duration-500 flex flex-col bg-card/30">
               <CardHeader className="border-b border-border/50 bg-muted/5">
@@ -194,12 +200,12 @@ export function Billing() {
               <CardContent className="space-y-4 py-6 flex-grow">
                 {plan.features.map((f) => (
                   <div key={f} className="flex items-center gap-2.5 text-xs font-semibold">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-500" />
+                    <CheckCircle2 className="w-4 h-4 text-cyan-500 shrink-0" />
                     <span className="text-muted-foreground">{f}</span>
                   </div>
                 ))}
               </CardContent>
-              <CardFooter className="bg-muted/10 p-6 pt-0">
+              <CardFooter className="bg-muted/10 p-6 pt-0 mt-auto">
                 <Button
                   className="w-full btn-gradient shadow-glow font-bold h-11"
                   variant="default"
