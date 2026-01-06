@@ -1,8 +1,7 @@
 import '@/lib/errorReporter';
 import { enableMapSet } from "immer";
-enableMapSet();
-import React, { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import React, { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -11,7 +10,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
-import '@/index.css'
+import '@/index.css';
 // Pages
 import { LandingPage } from '@/pages/LandingPage';
 import { Auth } from '@/pages/Auth';
@@ -25,11 +24,14 @@ import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { UserManagement } from '@/pages/admin/UserManagement';
 import { ApiDocs } from '@/pages/docs/ApiDocs';
 import { Toaster } from '@/components/ui/sonner';
+// Initialize Immer Map/Set support
+enableMapSet();
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes default stale time
     },
   },
 });
@@ -94,8 +96,8 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <RouterProvider router={router} />
-        <Toaster richColors closeButton />
+        <Toaster richColors closeButton position="top-right" />
       </ErrorBoundary>
     </QueryClientProvider>
   </StrictMode>,
-)
+);

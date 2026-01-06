@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, TenantEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
-import { ok, bad, notFound, isStr } from './core-utils';
+import { ok, bad, notFound } from './core-utils';
 import { MOCK_PLANS } from "@shared/mock-data";
 import type { SupportTicketCategory } from "@shared/types";
 const DOMAIN_REGEX = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
@@ -18,6 +18,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       }
       return ok(c, await user.getProfile(c.env));
     } catch (e) {
+      console.error('[API] Profile Error:', e);
       return bad(c, 'Failed to retrieve profile data');
     }
   });
@@ -38,7 +39,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
       if (profile.tenantCount > plan.tenantLimit) {
-        return bad(c, `Cannot downgrade to ${plan.name}. You have ${profile.tenantCount} nodes, but this plan only allows ${plan.tenantLimit}.`);
+        return bad(c, `Cannot migrate to ${plan.name}. Existing nodes (${profile.tenantCount}) exceed new plan limit (${plan.tenantLimit}).`);
       }
       await user.patch({ planId });
       await InvoiceEntity.create(c.env, {
@@ -70,11 +71,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     try {
       const { name, domain } = (await c.req.json()) as { name?: string; domain?: string };
       if (!name || name.trim().length < 3) return bad(c, 'Node identifier must be at least 3 characters');
-      if (!domain || !DOMAIN_REGEX.test(domain.trim())) return bad(c, 'Valid authorized domain is required');
+      if (!domain || !DOMAIN_REGEX.test(domain.trim())) return bad(c, 'Valid FQDN is required (e.g., node.service.com)');
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
       if (profile.tenantCount >= profile.plan.tenantLimit) {
-        return bad(c, `Plan limit reached (${profile.plan.tenantLimit} nodes). Please upgrade to provision more.`);
+        return bad(c, `Plan limit reached. Upgrade required for additional nodes.`);
       }
       const tenant = await TenantEntity.createForUser(c.env, {
         name: name.trim(),
@@ -94,7 +95,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const updated = await inst.toggleStatus();
       return ok(c, updated);
     } catch (e) {
-      return bad(c, 'Conflict detected during status transition. Please retry.');
+      return bad(c, 'Conflict detected during status transition');
     }
   });
   app.delete('/api/tenants/:id', async (c) => {
@@ -122,8 +123,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         message?: string;
         category?: SupportTicketCategory
       };
-      if (!subject || subject.trim().length < 5) return bad(c, 'Subject is too short (min 5 chars)');
-      if (!message || message.trim().length < 20) return bad(c, 'Message is too short (min 20 chars)');
+      if (!subject || subject.trim().length < 5) return bad(c, 'Subject is too short');
+      if (!message || message.trim().length < 20) return bad(c, 'Details are too short');
       const ticket = await SupportTicketEntity.create(c.env, {
         id: crypto.randomUUID(),
         userId,
@@ -138,37 +139,18 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return bad(c, 'Failed to submit support request');
     }
   });
-  // DATA EXPORT
-  app.get('/api/export', async (c) => {
-    try {
-      const user = new UserEntity(c.env, userId);
-      const profile = await user.getProfile(c.env);
-      const tenants = (await TenantEntity.list(c.env)).items.filter(t => t.ownerId === userId);
-      const tickets = await SupportTicketEntity.getTicketsByUser(c.env, userId);
-      const invoices = await InvoiceEntity.getInvoicesByUser(c.env, userId);
-      return ok(c, {
-        profile,
-        tenants,
-        tickets,
-        invoices,
-        exportedAt: Date.now()
-      });
-    } catch (e) {
-      return bad(c, 'Data compilation failed');
-    }
-  });
-  // PUBLIC LICENSE VALIDATION
+  // PUBLIC LICENSE VALIDATION (Cachable Endpoint)
   app.post('/api/validate-license', async (c) => {
     try {
       const { key, domain } = (await c.req.json()) as { key?: string; domain?: string };
-      if (!key || !domain) return bad(c, 'Cryptographic key and domain are required');
+      if (!key || !domain) return bad(c, 'Signature and domain are required');
       const cacheKey = `${key}:${domain}`;
       const cached = licenseCache.get(cacheKey);
       if (cached && cached.expires > Date.now()) return ok(c, cached.result);
       const page = await TenantEntity.list(c.env);
       const tenant = page.items.find(t => t.licenseKey === key);
       if (!tenant) {
-        const result = { valid: false, message: 'Authorization key unrecognized' };
+        const result = { valid: false, message: 'Invalid signature' };
         licenseCache.set(cacheKey, { result, expires: Date.now() + CACHE_TTL });
         return ok(c, result);
       }
@@ -177,7 +159,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const result = {
         valid: isValid,
         tenant: isValid ? { name: tenant.name, domain: tenant.domain, status: tenant.status } : undefined,
-        message: isValid ? 'License authorized' : 'Domain mismatch or node deauthorized'
+        message: isValid ? 'Authorized' : 'Authorization mismatch'
       };
       licenseCache.set(cacheKey, { result, expires: Date.now() + CACHE_TTL });
       return ok(c, result);
@@ -209,26 +191,29 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return ok(c, []);
     }
   });
-  app.post('/api/admin/users/:id/plan', async (c) => {
-    try {
-      const id = c.req.param('id');
-      const { planId } = (await c.req.json()) as { planId: string };
-      const planExists = MOCK_PLANS.some(p => p.id === planId);
-      if (!planExists) return bad(c, 'Invalid plan identifier');
-      const user = new UserEntity(c.env, id);
-      if (!await user.exists()) return notFound(c, 'User not found');
-      await user.patch({ planId });
-      const updatedProfile = await user.getProfile(c.env);
-      return ok(c, updatedProfile);
-    } catch (e) {
-      return bad(c, 'Failed to update user plan');
-    }
-  });
   app.get('/api/admin/tenants', async (c) => {
     try {
       return ok(c, await TenantEntity.list(c.env));
     } catch (e) {
       return ok(c, { items: [], next: null });
+    }
+  });
+  app.get('/api/export', async (c) => {
+    try {
+      const user = new UserEntity(c.env, userId);
+      const profile = await user.getProfile(c.env);
+      const tenants = (await TenantEntity.list(c.env)).items.filter(t => t.ownerId === userId);
+      const tickets = await SupportTicketEntity.getTicketsByUser(c.env, userId);
+      const invoices = await InvoiceEntity.getInvoicesByUser(c.env, userId);
+      return ok(c, {
+        profile,
+        tenants,
+        tickets,
+        invoices,
+        exportedAt: Date.now()
+      });
+    } catch (e) {
+      return bad(c, 'Export failed');
     }
   });
 }

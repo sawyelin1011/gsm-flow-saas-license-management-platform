@@ -1,5 +1,6 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import {
   Activity,
   Server,
@@ -72,7 +73,7 @@ export function ClientHome() {
         />
         <StatCard
           title="Monthly Spend"
-          value={`$${profile?.plan?.price ?? 0}`}
+          value={`${profile?.plan?.price ?? 0}`}
           icon={<CreditCard className="w-4 h-4" />}
           description="Standard recurring"
         />
@@ -117,9 +118,9 @@ export function ClientHome() {
                 <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Nodes Allocated</span>
                 <span className="font-mono font-bold text-primary">{currentTenants} / {tenantLimit}</span>
               </div>
-              <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
+              <div className="h-3 w-full bg-muted rounded-full overflow-hidden group cursor-help">
                 <div
-                  className="h-full bg-gradient-to-r from-cyan-500 to-primary transition-all duration-1000"
+                  className="h-full bg-gradient-to-r from-cyan-500 to-primary transition-all duration-1000 group-hover:brightness-110"
                   style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
@@ -132,14 +133,18 @@ export function ClientHome() {
                 <h4 className="font-bold text-sm tracking-tight">Growth Insight</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                You've utilized {usagePercentage.toFixed(0)}% of your capacity. Scale to maintain high availability.
+                You've utilized {usagePercentage.toFixed(0)}% of your capacity. Scale to maintain high availability and seamless node authorization.
               </p>
-              <Button variant="link" className="p-0 h-auto text-xs text-primary font-bold underline-offset-4">Upgrade Path Analysis</Button>
+              <Button asChild variant="link" className="p-0 h-auto text-xs text-primary font-bold underline-offset-4">
+                <Link to="/dashboard/billing">Upgrade Path Analysis</Link>
+              </Button>
             </div>
           </CardContent>
           <CardFooter className="p-4 sm:p-6 border-t border-border/50 bg-muted/5">
-            <Button className="w-full btn-gradient shadow-glow font-bold h-11">
-              Provision New Node <ArrowUpRight className="ml-2 w-4 h-4" />
+            <Button asChild className="w-full btn-gradient shadow-glow font-bold h-11">
+              <Link to="/dashboard/tenants">
+                Provision New Node <ArrowUpRight className="ml-2 w-4 h-4" />
+              </Link>
             </Button>
           </CardFooter>
         </Card>
