@@ -33,10 +33,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { api } from '@/lib/api-client';
 import type { UserProfile } from '@shared/types';
-
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
-  const [open, setOpen] = React.useState(false);
   const { pathname } = useLocation();
   const { data: profile } = useQuery<UserProfile>({
     queryKey: ['me'],
@@ -46,7 +44,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
     [profile]
   );
-
   const menuItems = [
     { title: 'Console', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Registry', icon: List, href: '/dashboard/data' },
@@ -59,14 +56,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
     { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
   ];
-
   const getCurrentTitle = () => {
     const item = [...menuItems, ...adminItems].find(i => i.href === pathname);
     return item?.title || 'System Core';
   };
-
   const handleLogout = () => window.location.replace('/');
-
   const MobileSidebar = () => (
     <div className="fixed left-0 top-0 z-20 w-16 h-screen bg-card/95 backdrop-blur border-r border-border/50 shadow-lg flex flex-col py-2 px-1 gap-1 overflow-hidden">
       <div className="p-3 border-b border-border/30 flex items-center justify-center">
@@ -109,7 +103,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
-
   const Header = () => (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 md:px-8 backdrop-blur-md">
       <div className="flex items-center gap-2">
@@ -142,13 +135,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
     </header>
   );
-
   const Main = ({ children }: { children: React.ReactNode }) => (
     <main className="flex-1 w-full dashboard-content p-4 md:p-8 animate-fade-in">
       {children}
     </main>
   );
-
   return (
     <>
       {isMobile ? (
@@ -160,12 +151,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
         </>
       ) : (
-        <SidebarProvider open={open} onOpenChange={setOpen}>
+        <SidebarProvider defaultOpen={true}>
           <Sidebar collapsible="icon" className="border-r border-border/50">
-            <SidebarHeader className="p-3 border-b border-border/30">
-              <div className="w-4 h-4 mx-auto flex items-center justify-center">
-                <Zap className="w-3.5 h-3.5 text-primary" />
-              </div>
+            <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
+              <Zap className="w-5 h-5 text-primary shrink-0" />
+              <span className="font-black text-xs uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">
+                GSM Flow
+              </span>
             </SidebarHeader>
             <SidebarContent className="p-2">
               <SidebarMenu>
@@ -176,12 +168,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       isActive={pathname === item.href}
                       tooltip={item.title}
                       className={cn(
-                        "h-12 w-full justify-center p-0 rounded hover:bg-accent data-[state=active]:bg-primary/20",
-                        pathname === item.href ? "text-primary bg-primary/20" : "text-muted-foreground hover:text-primary"
+                        "h-11 w-full px-3 flex items-center gap-3 rounded-lg transition-all",
+                        pathname === item.href 
+                          ? "text-primary bg-primary/10 font-bold" 
+                          : "text-muted-foreground hover:text-primary hover:bg-accent"
                       )}
                     >
-                      <Link to={item.href} className="w-5 h-5">
-                        <item.icon className="w-3.5 h-3.5" />
+                      <Link to={item.href}>
+                        <item.icon className="w-4 h-4 shrink-0" />
+                        <span className="text-xs truncate group-data-[collapsible=icon]:hidden">
+                          {item.title}
+                        </span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -189,7 +186,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
               {isAdmin && (
                 <>
-                  <SidebarSeparator className="my-3 mx-2" />
+                  <SidebarSeparator className="my-4 mx-2" />
                   <div className="px-4 mb-2 group-data-[collapsible=icon]:hidden">
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Authority</p>
                   </div>
@@ -201,12 +198,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                           isActive={pathname === item.href}
                           tooltip={item.title}
                           className={cn(
-                            "h-12 w-full justify-center p-0 rounded hover:bg-accent data-[state=active]:bg-primary/20",
-                            pathname === item.href ? "text-primary bg-primary/20" : "text-muted-foreground hover:text-primary"
+                            "h-11 w-full px-3 flex items-center gap-3 rounded-lg transition-all",
+                            pathname === item.href 
+                              ? "text-primary bg-primary/10 font-bold" 
+                              : "text-muted-foreground hover:text-primary hover:bg-accent"
                           )}
                         >
-                          <Link to={item.href} className="w-5 h-5">
-                            <item.icon className="w-3.5 h-3.5" />
+                          <Link to={item.href}>
+                            <item.icon className="w-4 h-4 shrink-0" />
+                            <span className="text-xs truncate group-data-[collapsible=icon]:hidden">
+                              {item.title}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -215,15 +217,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 </>
               )}
             </SidebarContent>
+            <SidebarRail />
           </Sidebar>
           <SidebarInset className="bg-muted/5 min-h-screen flex flex-col">
             <Header />
             <Main>{children}</Main>
           </SidebarInset>
-          <SidebarRail />
         </SidebarProvider>
       )}
     </>
   );
 }
-//
