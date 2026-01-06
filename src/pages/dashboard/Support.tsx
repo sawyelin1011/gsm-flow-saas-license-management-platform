@@ -4,10 +4,11 @@ import {
   LifeBuoy,
   Plus,
   MessageSquare,
-  HelpCircle,
   ExternalLink,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  HelpCircle,
+  Clock
 } from 'lucide-react';
 import {
   Card,
@@ -58,70 +59,62 @@ export function Support() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setIsCreateOpen(false);
-      toast.success('Ticket submitted successfully');
+      toast.success('Support request logged');
     },
-    onError: (err: any) => toast.error(err?.message || 'Submission failed'),
+    onError: (err: any) => toast.error(err?.message || 'Logging failed'),
   });
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const subject = (formData.get('subject') as string).trim();
     const message = (formData.get('message') as string).trim();
-    if (subject.length < 5) return toast.error('Subject must be at least 5 characters');
-    if (message.length < 20) return toast.error('Please provide more details (min 20 characters)');
+    if (subject.length < 5) return toast.error('Subject too brief');
+    if (message.length < 20) return toast.error('Detailed message required');
     createMutation.mutate({ subject, message, category });
   };
   return (
-    <div className="space-y-6 md:space-y-8 max-w-full overflow-x-hidden">
+    <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Support Center</h1>
-          <p className="text-sm text-muted-foreground font-medium">Get assistance with your licensing node clusters.</p>
+        <div className="relative w-full max-w-xs">
+           <HelpCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+           <Input placeholder="Search knowledge..." className="pl-9 h-10 text-xs border-border/50" />
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient w-full sm:w-auto font-bold h-11">
-              <Plus className="mr-2 h-4 w-4" /> Create Ticket
+            <Button className="btn-gradient w-full sm:w-auto font-black h-10 text-xs uppercase tracking-widest px-6">
+              <Plus className="mr-2 h-4 w-4" /> New Ticket
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] w-[95vw] rounded-2xl glass max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-md">
             <form onSubmit={handleCreate} className="space-y-6">
               <DialogHeader>
-                <DialogTitle>Submit Support Request</DialogTitle>
-                <DialogDescription>Describe the technical or billing issue you're facing.</DialogDescription>
+                <DialogTitle className="text-sm font-black uppercase tracking-widest">Support Request</DialogTitle>
+                <DialogDescription className="text-xs">Submit environment logs for faster resolution.</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select 
-                    value={category} 
-                    onValueChange={(val) => setCategory(val as SupportTicketCategory)}
-                  >
-                    <SelectTrigger className="h-10">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
+              <div className="grid gap-4 py-2">
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">Class</Label>
+                  <Select value={category} onValueChange={(val) => setCategory(val as SupportTicketCategory)}>
+                    <SelectTrigger className="h-10 text-xs"><SelectValue placeholder="Select class" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="technical">Technical Support</SelectItem>
-                      <SelectItem value="billing">Billing & Invoices</SelectItem>
-                      <SelectItem value="account">Account Access</SelectItem>
+                      <SelectItem value="technical" className="text-xs">Technical Signal</SelectItem>
+                      <SelectItem value="billing" className="text-xs">Billing Registry</SelectItem>
+                      <SelectItem value="account" className="text-xs">Operator Account</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="subject">Subject</Label>
-                  <Input id="subject" name="subject" placeholder="Summary of issue" required />
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">Identifier</Label>
+                  <Input name="subject" placeholder="Brief subject" className="h-10 text-xs" required />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="message">Details</Label>
-                  <Textarea id="message" name="message" placeholder="Provide environment logs if possible..." className="min-h-[120px]" required />
+                <div className="space-y-2">
+                  <Label className="text-[10px] uppercase font-bold text-muted-foreground">Context</Label>
+                  <Textarea name="message" placeholder="Provide full node logs..." className="min-h-[120px] text-xs resize-none" required />
                 </div>
               </div>
-              <DialogFooter className="flex-col sm:flex-row gap-3">
-                <Button type="button" variant="ghost" onClick={() => setIsCreateOpen(false)} className="h-11">Cancel</Button>
-                <Button type="submit" disabled={createMutation.isPending} className="btn-gradient font-bold h-11">
-                  {createMutation.isPending ? (
-                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending...</>
-                  ) : "Submit Ticket"}
+              <DialogFooter>
+                <Button type="submit" disabled={createMutation.isPending} className="btn-gradient w-full h-11 text-xs font-black uppercase tracking-widest">
+                  {createMutation.isPending ? "Transmitting..." : "Log Ticket"}
                 </Button>
               </DialogFooter>
             </form>
@@ -130,37 +123,37 @@ export function Support() {
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-primary" /> Recent History
-          </h2>
+          <div className="flex items-center justify-between border-b pb-2">
+            <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+              <MessageSquare className="w-3 h-3" /> Signal History
+            </h2>
+          </div>
           {isLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
+              {[1, 2].map(i => <Skeleton key={i} className="h-20 w-full rounded-lg" />)}
             </div>
           ) : tickets?.length === 0 ? (
-            <Card className="border-dashed py-12 text-center px-4 bg-muted/5">
-              <LifeBuoy className="text-muted-foreground w-10 h-10 mx-auto mb-4 opacity-30" />
-              <h3 className="font-bold">No active tickets</h3>
-              <p className="text-xs text-muted-foreground mb-6">Need expert help? We're available 24/7.</p>
-              <Button variant="outline" size="sm" onClick={() => setIsCreateOpen(true)}>Create Ticket</Button>
+            <Card className="border-dashed py-12 text-center bg-muted/5">
+              <p className="text-xs text-muted-foreground font-bold italic uppercase tracking-widest opacity-30">No active signals</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+            <div className="space-y-3">
               {tickets?.map((ticket) => (
-                <Card key={ticket.id} className="border-border/50 hover:border-primary/50 transition-all overflow-hidden group">
-                  <div className="p-4 flex items-start justify-between gap-4">
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[9px] font-black h-5 uppercase px-1.5 border-primary/20">{ticket.category}</Badge>
-                        <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">{ticket.subject}</h3>
+                <Card key={ticket.id} className="border-border/50 hover:bg-primary/[0.01] transition-colors group">
+                  <div className="p-4 flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[8px] font-black h-4 uppercase border-border/50 text-muted-foreground">{ticket.category}</Badge>
+                        <h3 className="font-bold text-xs group-hover:text-primary transition-colors">{ticket.subject}</h3>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/80 pt-1">
-                        {format(ticket.createdAt, 'MMM dd, yyyy · HH:mm')}
-                      </p>
+                      <div className="flex items-center gap-3 text-[9px] text-muted-foreground font-mono">
+                        <span className="flex items-center gap-1"><Clock className="w-2.5 h-2.5" /> {format(ticket.createdAt, 'MMM dd, HH:mm')}</span>
+                        <span className="uppercase tracking-widest">ID: {ticket.id.slice(0, 6)}</span>
+                      </div>
                     </div>
-                    <Badge variant={ticket.status === 'open' ? 'default' : 'secondary'} className={cn(
-                      "text-[9px] uppercase",
-                      ticket.status === 'open' ? 'bg-cyan-500 hover:bg-cyan-600' : ''
+                    <Badge className={cn(
+                      "text-[9px] uppercase h-5 font-black",
+                      ticket.status === 'open' ? 'bg-primary text-background' : 'bg-muted text-muted-foreground'
                     )}>
                       {ticket.status}
                     </Badge>
@@ -170,31 +163,28 @@ export function Support() {
             </div>
           )}
         </div>
-        <div className="space-y-6">
-          <Card className="border-primary/20 bg-primary/[0.02] shadow-sm">
-            <CardHeader className="p-4 sm:p-6 border-b">
-              <CardTitle className="text-base">System Knowledge</CardTitle>
+        <div className="space-y-4">
+          <Card className="border-border/50 bg-muted/5">
+            <CardHeader className="py-3 border-b border-border/50">
+              <CardTitle className="text-[10px] font-black uppercase tracking-widest">Resource Node</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-2">
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50" asChild>
-                <a href="/docs">Documentation <ExternalLink className="h-3 w-3" /></a>
+              <Button variant="outline" className="w-full justify-between h-9 text-[10px] font-bold uppercase tracking-widest border-border/50 hover:text-primary" asChild>
+                <a href="/docs">Docs Repository <ExternalLink className="h-3 w-3" /></a>
               </Button>
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50">
-                Error Codes <ExternalLink className="h-3 w-3" />
-              </Button>
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50">
-                Billing FAQ <ExternalLink className="h-3 w-3" />
+              <Button variant="outline" className="w-full justify-between h-9 text-[10px] font-bold uppercase tracking-widest border-border/50 hover:text-primary">
+                Protocol Specs <ExternalLink className="h-3 w-3" />
               </Button>
             </CardContent>
           </Card>
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3 shadow-sm">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-amber-900 dark:text-amber-100">Global Signal Status</p>
-              <p className="text-[10px] text-amber-700 dark:text-amber-300 leading-relaxed">
-                Authority nodes are online. Average validation latency: 42ms. No reported outages.
-              </p>
+          <div className="p-4 rounded-lg bg-primary/5 border border-primary/10 space-y-2">
+            <div className="flex items-center gap-2 text-primary">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-[10px] font-black uppercase tracking-widest">Network Health</span>
             </div>
+            <p className="text-[10px] text-muted-foreground font-bold leading-relaxed uppercase opacity-70">
+              Average response latency: 22ms. Distributed clusters are performing within nominal parameters.
+            </p>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ import { DataGrid } from '@/pages/dashboard/DataGrid';
 import { Billing } from '@/pages/dashboard/Billing';
 import { Settings } from '@/pages/dashboard/Settings';
 import { Support } from '@/pages/dashboard/Support';
-import { ApiTest } from '@/pages/dashboard/ApiTest';
+import { TestBench } from '@/pages/dashboard/TestBench';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { UserManagement } from '@/pages/admin/UserManagement';
 import { ApiDocs } from '@/pages/docs/ApiDocs';
@@ -79,8 +79,8 @@ const router = createBrowserRouter([
         element: <Support />,
       },
       {
-        path: "api-test",
-        element: <ApiTest />,
+        path: "test",
+        element: <TestBench />,
       },
       {
         path: "settings",
