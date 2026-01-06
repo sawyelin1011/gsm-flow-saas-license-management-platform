@@ -32,6 +32,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+
+  React.useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(true);
+    }
+  }, [isMobile]);
   const menuItems = [
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
@@ -45,7 +52,16 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   ];
   const isAdmin = true;
   return (
-    <SidebarProvider defaultOpen={!isMobile}>
+    <SidebarProvider 
+      open={sidebarOpen} 
+      onOpenChange={(open) => {
+        if (isMobile) {
+          setSidebarOpen(true);
+          return;
+        }
+        setSidebarOpen(open);
+      }}
+    >
       <Sidebar
         collapsible="icon"
         className="border-r border-border/50 bg-sidebar transition-all duration-300"
