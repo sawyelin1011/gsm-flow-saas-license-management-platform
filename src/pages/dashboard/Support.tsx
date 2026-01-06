@@ -47,6 +47,7 @@ import type { SupportTicket, SupportTicketCategory } from '@shared/types';
 export function Support() {
   const queryClient = useQueryClient();
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [category, setCategory] = React.useState<SupportTicketCategory>('technical');
   const { data: tickets, isLoading } = useQuery<SupportTicket[]>({
     queryKey: ['tickets'],
     queryFn: () => api<SupportTicket[]>('/api/support'),
@@ -57,7 +58,7 @@ export function Support() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
       setIsCreateOpen(false);
-      toast.success('Ticket submitted');
+      toast.success('Ticket submitted successfully');
     },
     onError: (err: any) => toast.error(err?.message || 'Submission failed'),
   });
@@ -66,8 +67,8 @@ export function Support() {
     const formData = new FormData(e.currentTarget);
     const subject = (formData.get('subject') as string).trim();
     const message = (formData.get('message') as string).trim();
-    const category = formData.get('category') as SupportTicketCategory;
-    if (subject.length < 5 || message.length < 20) return toast.error('Check field lengths');
+    if (subject.length < 5) return toast.error('Subject must be at least 5 characters');
+    if (message.length < 20) return toast.error('Please provide more details (min 20 characters)');
     createMutation.mutate({ subject, message, category });
   };
   return (
@@ -83,7 +84,7 @@ export function Support() {
               <Plus className="mr-2 h-4 w-4" /> Create Ticket
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px] w-[95vw] rounded-2xl glass">
+          <DialogContent className="sm:max-w-[500px] w-[95vw] rounded-2xl glass max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleCreate} className="space-y-6">
               <DialogHeader>
                 <DialogTitle>Submit Support Request</DialogTitle>
@@ -92,8 +93,13 @@ export function Support() {
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select name="category" defaultValue="technical">
-                    <SelectTrigger className="h-10"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <Select 
+                    value={category} 
+                    onValueChange={(val) => setCategory(val as SupportTicketCategory)}
+                  >
+                    <SelectTrigger className="h-10">
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="technical">Technical Support</SelectItem>
                       <SelectItem value="billing">Billing & Invoices</SelectItem>
@@ -111,9 +117,11 @@ export function Support() {
                 </div>
               </div>
               <DialogFooter className="flex-col sm:flex-row gap-3">
-                <Button type="button" variant="ghost" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={createMutation.isPending} className="btn-gradient font-bold">
-                  {createMutation.isPending ? "Sending..." : "Submit Ticket"}
+                <Button type="button" variant="ghost" onClick={() => setIsCreateOpen(false)} className="h-11">Cancel</Button>
+                <Button type="submit" disabled={createMutation.isPending} className="btn-gradient font-bold h-11">
+                  {createMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Sending...</>
+                  ) : "Submit Ticket"}
                 </Button>
               </DialogFooter>
             </form>
@@ -139,12 +147,12 @@ export function Support() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
               {tickets?.map((ticket) => (
-                <Card key={ticket.id} className="border-border/50 hover:border-primary/50 transition-all overflow-hidden">
+                <Card key={ticket.id} className="border-border/50 hover:border-primary/50 transition-all overflow-hidden group">
                   <div className="p-4 flex items-start justify-between gap-4">
                     <div className="space-y-1 flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="text-[9px] font-black h-5 uppercase px-1.5">{ticket.category}</Badge>
-                        <h3 className="font-bold text-sm truncate">{ticket.subject}</h3>
+                        <Badge variant="outline" className="text-[9px] font-black h-5 uppercase px-1.5 border-primary/20">{ticket.category}</Badge>
+                        <h3 className="font-bold text-sm truncate group-hover:text-primary transition-colors">{ticket.subject}</h3>
                       </div>
                       <p className="text-[10px] text-muted-foreground/80 pt-1">
                         {format(ticket.createdAt, 'MMM dd, yyyy · HH:mm')}
@@ -152,7 +160,7 @@ export function Support() {
                     </div>
                     <Badge variant={ticket.status === 'open' ? 'default' : 'secondary'} className={cn(
                       "text-[9px] uppercase",
-                      ticket.status === 'open' ? 'bg-emerald-500' : ''
+                      ticket.status === 'open' ? 'bg-cyan-500 hover:bg-cyan-600' : ''
                     )}>
                       {ticket.status}
                     </Badge>
@@ -168,23 +176,23 @@ export function Support() {
               <CardTitle className="text-base">System Knowledge</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-2">
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background" asChild>
+              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50" asChild>
                 <a href="/docs">Documentation <ExternalLink className="h-3 w-3" /></a>
               </Button>
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background">
+              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50">
                 Error Codes <ExternalLink className="h-3 w-3" />
               </Button>
-              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background">
+              <Button variant="outline" className="w-full justify-between h-10 text-xs font-bold bg-background hover:border-primary/50">
                 Billing FAQ <ExternalLink className="h-3 w-3" />
               </Button>
             </CardContent>
           </Card>
-          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3">
+          <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3 shadow-sm">
             <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
             <div className="space-y-1">
               <p className="text-xs font-bold text-amber-900 dark:text-amber-100">Global Signal Status</p>
               <p className="text-[10px] text-amber-700 dark:text-amber-300 leading-relaxed">
-                Authority nodes are online. Average validation latency: 42ms.
+                Authority nodes are online. Average validation latency: 42ms. No reported outages.
               </p>
             </div>
           </div>

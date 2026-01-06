@@ -8,7 +8,7 @@ const DOMAIN_REGEX = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-
 const licenseCache = new Map<string, { result: any; expires: number }>();
 const CACHE_TTL = 5 * 60 * 1000;
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-  const userId = 'admin-demo'; 
+  const userId = 'admin-demo';
   // USER PROFILE
   app.get('/api/me', async (c) => {
     try {
@@ -37,7 +37,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       if (!plan) return bad(c, 'Requested plan does not exist');
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
-      // Validation: Prevent downgrade if node count exceeds new limit
       if (profile.tenantCount > plan.tenantLimit) {
         return bad(c, `Cannot downgrade to ${plan.name}. You have ${profile.tenantCount} nodes, but this plan only allows ${plan.tenantLimit}.`);
       }
@@ -186,7 +185,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return bad(c, 'Validation engine timeout');
     }
   });
-  // ADMIN
+  // ADMIN ENDPOINTS
   app.get('/api/admin/stats', async (c) => {
     try {
       const users = await UserEntity.list(c.env);
@@ -208,6 +207,21 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return ok(c, (await UserEntity.list(c.env)).items);
     } catch (e) {
       return ok(c, []);
+    }
+  });
+  app.post('/api/admin/users/:id/plan', async (c) => {
+    try {
+      const id = c.req.param('id');
+      const { planId } = (await c.req.json()) as { planId: string };
+      const planExists = MOCK_PLANS.some(p => p.id === planId);
+      if (!planExists) return bad(c, 'Invalid plan identifier');
+      const user = new UserEntity(c.env, id);
+      if (!await user.exists()) return notFound(c, 'User not found');
+      await user.patch({ planId });
+      const updatedProfile = await user.getProfile(c.env);
+      return ok(c, updatedProfile);
+    } catch (e) {
+      return bad(c, 'Failed to update user plan');
     }
   });
   app.get('/api/admin/tenants', async (c) => {
