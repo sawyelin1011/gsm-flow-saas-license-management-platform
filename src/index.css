@@ -66,7 +66,7 @@
   }
 }
 @layer components {
-  /* Docked Sidebar Mobile Overrides */
+  /* High-performance Mobile Sidebar: Permanently Docked */
   @media (max-width: 767px) {
     [data-sidebar="sidebar"] {
       --sidebar-width: 64px !important;
@@ -78,15 +78,26 @@
       z-index: 50 !important;
       transform: none !important;
       visibility: visible !important;
+      width: 64px !important;
+      border-right: 1px solid hsl(var(--border));
     }
-    [data-sidebar="sidebar"][data-collapsible="icon"] {
+    /* Force visibility of icons in collapsed state */
+    [data-sidebar="sidebar"][data-state="collapsed"] {
       width: 64px !important;
     }
+    /* Handle content margin to avoid overlapping with fixed sidebar */
     [data-sidebar="inset"] {
       margin-left: 64px !important;
       width: calc(100% - 64px) !important;
+      min-width: 0 !important;
     }
-    .group-data-\[collapsible\=icon\]\:hidden {
+    /* Mobile Expansion Overlay (Drawer style) */
+    [data-sidebar="sidebar"][data-state="expanded"] {
+      width: 256px !important;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    }
+    /* Hide text labels by default on mobile unless expanded */
+    [data-sidebar="sidebar"][data-state="collapsed"] .group-data-\[collapsible\=icon\]\:hidden {
       display: none !important;
     }
   }

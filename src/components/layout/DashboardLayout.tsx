@@ -46,9 +46,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = true;
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <Sidebar 
-        collapsible="icon" 
-        className="border-r border-border/50 bg-sidebar transition-all duration-300 sm:flex"
+      <Sidebar
+        collapsible="icon"
+        className="border-r border-border/50 bg-sidebar transition-all duration-300"
       >
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-3 px-2 overflow-hidden">
@@ -149,9 +149,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset className="bg-muted/5 min-h-screen relative flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <SidebarTrigger className="hover:text-primary transition-colors h-10 w-10" />
+            <SidebarTrigger className="hover:text-primary transition-colors h-10 w-10 shrink-0" />
             <div className="h-4 w-px bg-border hidden sm:block" />
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block truncate">
               {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
             </h2>
           </div>

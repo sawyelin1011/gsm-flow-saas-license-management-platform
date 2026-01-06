@@ -46,7 +46,7 @@ export function ClientHome() {
   const currentTenants = profile?.tenantCount ?? 0;
   const usagePercentage = (currentTenants / tenantLimit) * 100;
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-6 md:space-y-8 max-w-full overflow-x-hidden">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Node Status</h1>
         <p className="text-sm md:text-base text-muted-foreground font-medium">Monitoring active installations for {profile?.name}</p>
@@ -77,39 +77,41 @@ export function ClientHome() {
           description="Standard recurring"
         />
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-6">
-        <Card className="lg:col-span-4 border-border/50 shadow-sm overflow-hidden flex flex-col">
-          <CardHeader className="bg-muted/5 border-b border-border/50">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+          <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
             <CardTitle className="text-lg">License Traffic</CardTitle>
             <CardDescription>Network validation activity across all nodes</CardDescription>
           </CardHeader>
-          <CardContent className="h-[300px] md:h-[350px] pt-6 flex-grow">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={MOCK_CHART_DATA}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="validations"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }}
-                  activeDot={{ r: 6, strokeWidth: 0 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="flex-1 p-2 sm:p-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={MOCK_CHART_DATA}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="validations"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+                    activeDot={{ r: 6, strokeWidth: 0 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
-        <Card className="lg:col-span-3 border-border/50 shadow-sm flex flex-col">
-          <CardHeader className="bg-muted/5 border-b border-border/50">
+        <Card className="border-border/50 shadow-sm flex flex-col justify-between">
+          <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
             <CardTitle className="text-lg">Node Capacity</CardTitle>
             <CardDescription>Subscription usage tracking</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 md:space-y-8 pt-6 flex-grow">
+          <CardContent className="space-y-6 p-4 sm:p-6 flex-grow">
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Nodes Allocated</span>
@@ -122,7 +124,7 @@ export function ClientHome() {
                 />
               </div>
             </div>
-            <div className="p-4 md:p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
                   <TrendingUp className="w-5 h-5" />
@@ -130,12 +132,12 @@ export function ClientHome() {
                 <h4 className="font-bold text-sm tracking-tight">Growth Insight</h4>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                You've utilized {usagePercentage.toFixed(0)}% of your node capacity. Scale to a larger plan to maintain high availability for new deployments.
+                You've utilized {usagePercentage.toFixed(0)}% of your capacity. Scale to maintain high availability.
               </p>
               <Button variant="link" className="p-0 h-auto text-xs text-primary font-bold underline-offset-4">Upgrade Path Analysis</Button>
             </div>
           </CardContent>
-          <CardFooter className="p-4 md:p-6 border-t border-border/50 bg-muted/5">
+          <CardFooter className="p-4 sm:p-6 border-t border-border/50 bg-muted/5">
             <Button className="w-full btn-gradient shadow-glow font-bold h-11">
               Provision New Node <ArrowUpRight className="ml-2 w-4 h-4" />
             </Button>
@@ -148,13 +150,13 @@ export function ClientHome() {
 function StatCard({ title, value, icon, description }: { title: string; value: string; icon: React.ReactNode; description: string }) {
   return (
     <Card className="border-border/50 shadow-sm hover:border-primary/50 transition-colors group">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
         <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">{title}</CardTitle>
         <div className="text-muted-foreground group-hover:text-primary transition-colors">{icon}</div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         <div className="text-2xl font-bold tracking-tight">{value}</div>
-        <p className="text-[10px] font-medium text-muted-foreground mt-1">{description}</p>
+        <p className="text-[10px] font-medium text-muted-foreground mt-1 truncate">{description}</p>
       </CardContent>
     </Card>
   );
