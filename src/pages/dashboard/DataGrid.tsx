@@ -33,6 +33,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
   DialogFooter
 } from '@/components/ui/dialog';
@@ -88,6 +89,7 @@ export function DataGrid() {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-sm font-black uppercase tracking-widest">Add Resource</DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">Add a new resource to the master registry.</DialogDescription>
             </DialogHeader>
             <form onSubmit={(e) => {
               e.preventDefault();
