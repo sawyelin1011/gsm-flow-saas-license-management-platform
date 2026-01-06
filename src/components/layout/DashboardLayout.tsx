@@ -2,17 +2,17 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard,
-  Table,
   CreditCard,
   Settings,
   LogOut,
-  ShieldCheck,
-  Terminal,
-  LifeBuoy,
-  ShieldAlert,
   Zap,
   Activity,
-  ChevronRight
+  ChevronRight,
+  List,
+  Play,
+  HelpCircle,
+  BarChart3,
+  Users
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -52,15 +52,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   }, [isMobile]);
   const menuItems = [
     { title: 'Console', icon: LayoutDashboard, href: '/dashboard' },
-    { title: 'Registry', icon: Table, href: '/dashboard/data' },
-    { title: 'Test Bench', icon: Terminal, href: '/dashboard/test' },
+    { title: 'Registry', icon: List, href: '/dashboard/data' },
+    { title: 'Test Bench', icon: Play, href: '/dashboard/test' },
     { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
-    { title: 'Support', icon: LifeBuoy, href: '/dashboard/support' },
+    { title: 'Support', icon: HelpCircle, href: '/dashboard/support' },
     { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
   ];
   const adminItems = [
-    { title: 'System Overview', icon: ShieldAlert, href: '/dashboard/admin' },
-    { title: 'Operator Mgmt', icon: ShieldCheck, href: '/dashboard/admin/users' },
+    { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
+    { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
   ];
   const getCurrentTitle = () => {
     const item = [...menuItems, ...adminItems].find(i => i.href === pathname);
@@ -130,11 +130,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </>
           )}
         </SidebarContent>
-        <SidebarRail />
         <SidebarFooter className="p-2 border-t border-border/50">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton 
+              <SidebarMenuButton
                 onClick={handleLogout}
                 className="text-muted-foreground hover:text-destructive"
               >
@@ -165,6 +164,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </SidebarInset>
+      <SidebarRail />
     </SidebarProvider>
   );
 }
