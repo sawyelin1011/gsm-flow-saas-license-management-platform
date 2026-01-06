@@ -1,12 +1,11 @@
-import React from 'react';
-import { 
-  LayoutDashboard, 
-  Server, 
-  CreditCard, 
-  Settings, 
-  LogOut, 
+import React, { useEffect, useState } from 'react';
+import {
+  LayoutDashboard,
+  Server,
+  CreditCard,
+  Settings,
+  LogOut,
   ShieldCheck,
-  Menu,
   ShieldAlert,
   BookOpen
 } from 'lucide-react';
@@ -27,45 +26,46 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const menuItems = [
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
     { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
     { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
   ];
-
   const adminItems = [
     { title: 'Global Overview', icon: ShieldAlert, href: '/dashboard/admin' },
     { title: 'User Management', icon: ShieldCheck, href: '/dashboard/admin/users' },
   ];
-
-  const isAdmin = true; // Prototype logic: current user is admin
-
+  const isAdmin = true;
   return (
-    <SidebarProvider>
-      <Sidebar className="border-r border-border/50">
+    <SidebarProvider defaultOpen={!isMobile}>
+      <Sidebar collapsible="icon" className="border-r border-border/50 bg-sidebar">
         <SidebarHeader className="p-4">
-          <div className="flex items-center gap-3 px-2">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
+          <div className="flex items-center gap-3 px-2 overflow-hidden">
+            <div className="min-w-8 w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight">GSM Flow</span>
+            <span className="font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden">GSM Flow</span>
           </div>
         </SidebarHeader>
         <SidebarContent className="p-2">
           <SidebarMenu>
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton 
-                  asChild 
+                <SidebarMenuButton
+                  asChild
                   isActive={location.pathname === item.href}
                   tooltip={item.title}
                   className={cn(
-                    "h-10 px-4",
-                    location.pathname === item.href ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent"
+                    "h-10 px-4 transition-all",
+                    location.pathname === item.href 
+                      ? "bg-primary/10 text-primary border-r-2 border-primary" 
+                      : "hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   <Link to={item.href}>
@@ -76,10 +76,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-
           {isAdmin && (
             <div className="mt-8">
-              <div className="px-4 mb-2">
+              <div className="px-4 mb-2 group-data-[collapsible=icon]:hidden">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">System Admin</p>
               </div>
               <SidebarMenu>
@@ -88,9 +87,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <SidebarMenuButton
                       asChild
                       isActive={location.pathname === item.href}
+                      tooltip={item.title}
                       className={cn(
-                        "h-10 px-4",
-                        location.pathname === item.href ? "bg-amber-500 text-white hover:bg-amber-600" : "hover:bg-accent"
+                        "h-10 px-4 transition-all",
+                        location.pathname === item.href 
+                          ? "bg-primary/10 text-primary border-r-2 border-primary" 
+                          : "hover:bg-accent"
                       )}
                     >
                       <Link to={item.href}>
@@ -103,19 +105,21 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
             </div>
           )}
-
           <div className="mt-auto pt-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-10 px-4">
-                  <Link to="/docs"><BookOpen className="w-5 h-5" /> <span>API Documentation</span></Link>
+                <SidebarMenuButton asChild className="h-10 px-4" tooltip="API Documentation">
+                  <Link to="/docs">
+                    <BookOpen className="w-5 h-5" /> 
+                    <span>API Documentation</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </div>
         </SidebarContent>
         <SidebarFooter className="p-4 border-t border-border/50">
-          <div className="flex items-center gap-3 px-2 mb-4">
+          <div className="flex items-center gap-3 px-2 mb-4 overflow-hidden group-data-[collapsible=icon]:hidden">
             <Avatar className="w-8 h-8 border border-border">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>JD</AvatarFallback>
@@ -125,22 +129,22 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span className="text-xs text-muted-foreground truncate">john@gsmflow.com</span>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-muted-foreground hover:text-destructive h-9"
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-muted-foreground hover:text-destructive h-9 px-2"
             onClick={() => navigate('/')}
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Logout
+            <span className="group-data-[collapsible=icon]:hidden">Logout</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-muted/10">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-6 backdrop-blur-md">
+      <SidebarInset className="bg-muted/5 min-h-screen">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <SidebarTrigger className="-ml-1" />
+            <SidebarTrigger className="hover:text-primary transition-colors" />
             <div className="h-4 w-px bg-border hidden sm:block" />
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider hidden sm:block">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block">
               {menuItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
             </h2>
           </div>
@@ -148,8 +152,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <ThemeToggle className="static" />
           </div>
         </header>
-        <main className="p-6">
-          <div className="max-w-7xl mx-auto space-y-8">
+        <main className="max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8">
+          <div className="space-y-8 animate-fade-in">
             {children}
           </div>
         </main>
