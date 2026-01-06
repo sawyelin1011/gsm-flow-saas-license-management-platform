@@ -69,68 +69,7 @@
   }
 }
 @layer components {
-  /* RIGID PERMANENT MOBILE SIDEBAR DOCKING (Phase 10) */
-  @media (max-width: 767px) {
-    /* Force sidebar to 64px icon-only mode forever on mobile */
-    [data-sidebar="sidebar"] {
-      --sidebar-width: 64px !important;
-      display: flex !important;
-      position: fixed !important;
-      left: 0 !important;
-      top: 0 !important;
-      bottom: 0 !important;
-      z-index: 50 !important;
-      transform: none !important;
-      visibility: visible !important;
-      opacity: 1 !important;
-      width: 64px !important;
-      border-right: 1px solid hsl(var(--border));
-    }
-    /* Prevent any drawer or expansion states from working on mobile */
-    [data-sidebar="sidebar"][data-state="open"],
-    [data-sidebar="sidebar"][data-state="closed"] {
-      width: 64px !important;
-    }
-    
-    [data-sidebar="sidebar"][data-state="closed"] {
-      opacity: 1 !important;
-      transform: translateX(0) !important;
-      transform-origin: 0 0 !important;
-      pointer-events: auto !important;
-    }
-    /* Force the main content area to always respect the 64px sidebar dock */
-    .group\/sidebar-wrapper > *:nth-child(2) {
-      margin-left: 64px !important;
-      width: calc(100% - 64px) !important;
-      min-width: 0 !important;
-      flex: 1 !important;
-      padding-left: 0 !important;
-    }
-    /* Hide text labels, descriptive spans, and footer details rigidly */
-    [data-sidebar="sidebar"] span:not(.sr-only),
-    [data-sidebar="sidebar"] p,
-    [data-sidebar="sidebar"] .group-data-\[collapsible\=icon\]\:hidden {
-      display: none !important;
-    }
-    /* Center icons in the 64px dock for thumb reachability */
-    [data-sidebar="sidebar"] a,
-    [data-sidebar="sidebar"] button {
-      justify-content: center !important;
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-    }
-    /* Hide Sheet overlay on mobile */
-    [data-radix-sheet-overlay],
-    div[style*="backdrop-blur"] {
-      display: none !important;
-      pointer-events: none !important;
-    }
-    
-    /* Adjust header height to align with standard mobile taps */
-    header {
-      height: 64px !important;
-    }
-  }
+
   .btn-gradient {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg text-white shadow-primary hover:shadow-glow hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
     background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);

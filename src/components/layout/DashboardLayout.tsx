@@ -36,9 +36,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
-    if (isMobile) {
-      setOpen(false);
-    }
+    setOpen(!isMobile);
   }, [isMobile]);
   const menuItems = [
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
@@ -55,19 +53,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={(newOpen) => setOpen(isMobile ? newOpen : true)}
     >
       <Sidebar
         data-sidebar="sidebar"
         collapsible="icon"
         className="border-r border-border/50 bg-sidebar transition-all duration-300"
       >
-        <SidebarHeader className="p-4 flex items-center justify-center md:justify-start">
+        <SidebarHeader className="p-4 flex items-center justify-center lg:justify-start">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="min-w-8 w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight hidden md:inline whitespace-nowrap">
+            <span className="font-bold text-lg tracking-tight hidden lg:inline whitespace-nowrap">
               GSM Flow
             </span>
           </div>
@@ -81,15 +79,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   isActive={location.pathname === item.href}
                   tooltip={item.title}
                   className={cn(
-                    "h-12 sm:h-10 px-0 md:px-4 transition-all flex justify-center md:justify-start",
+                    "h-12 sm:h-10 px-0 lg:px-4 transition-all flex justify-center lg:justify-start",
                     location.pathname === item.href
-                      ? "bg-primary/10 text-primary md:border-r-2 border-primary"
+                      ? "bg-primary/10 text-primary lg:border-r-2 border-primary"
                       : "hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
                   <Link to={item.href}>
                     <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
-                    <span className="hidden md:inline">{item.title}</span>
+                    <span className="hidden lg:inline">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -97,7 +95,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
           {isAdmin && (
             <div className="mt-8">
-              <div className="px-4 mb-2 hidden md:block">
+              <div className="px-4 mb-2 hidden lg:block">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">System Admin</p>
               </div>
               <SidebarMenu>
@@ -108,15 +106,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       isActive={location.pathname === item.href}
                       tooltip={item.title}
                       className={cn(
-                        "h-12 sm:h-10 px-0 md:px-4 transition-all flex justify-center md:justify-start",
+                        "h-12 sm:h-10 px-0 lg:px-4 transition-all flex justify-center lg:justify-start",
                         location.pathname === item.href
-                          ? "bg-primary/10 text-primary md:border-r-2 border-primary"
+                          ? "bg-primary/10 text-primary lg:border-r-2 border-primary"
                           : "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
                       <Link to={item.href}>
                         <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
-                        <span className="hidden md:inline">{item.title}</span>
+                        <span className="hidden lg:inline">{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -127,10 +125,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <div className="mt-auto pt-4">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-12 sm:h-10 px-0 md:px-4 flex justify-center md:justify-start" tooltip="API Documentation">
+                <SidebarMenuButton asChild className="h-12 sm:h-10 px-0 lg:px-4 flex justify-center lg:justify-start" tooltip="API Documentation">
                   <Link to="/docs">
                     <BookOpen className="w-6 h-6 sm:w-5 sm:h-5" />
-                    <span className="hidden md:inline">API Docs</span>
+                    <span className="hidden lg:inline">API Docs</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -139,7 +137,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
         <SidebarRail />
         <SidebarFooter className="p-4 border-t border-border/50">
-          <div className="flex items-center gap-3 mb-4 overflow-hidden hidden md:flex">
+          <div className="flex items-center gap-3 mb-4 overflow-hidden hidden lg:flex">
             <Avatar className="w-8 h-8 border border-border">
               <AvatarImage src="https://github.com/shadcn.png" />
               <AvatarFallback>JD</AvatarFallback>
@@ -151,18 +149,18 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </div>
           <Button
             variant="ghost"
-            className="w-full justify-center md:justify-start text-muted-foreground hover:text-destructive h-10 sm:h-9 px-2"
+            className="w-full justify-center lg:justify-start text-muted-foreground hover:text-destructive h-10 sm:h-9 px-2"
             onClick={() => navigate('/')}
           >
-            <LogOut className="w-5 h-5 sm:w-4 sm:h-4 md:mr-2" />
-            <span className="hidden md:inline">Logout</span>
+            <LogOut className="w-5 h-5 sm:w-4 sm:h-4 lg:mr-2" />
+            <span className="hidden lg:inline">Logout</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="bg-muted/5 min-h-screen relative flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block truncate">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden lg:block truncate">
               {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
             </h2>
           </div>

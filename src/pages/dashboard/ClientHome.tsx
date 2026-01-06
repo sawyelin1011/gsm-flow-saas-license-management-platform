@@ -86,7 +86,7 @@ export function ClientHome() {
           </CardHeader>
           <CardContent className="flex-1 p-2 sm:p-6">
             <div className="h-[250px] sm:h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" aspect={2.75}>
                 <LineChart data={MOCK_CHART_DATA}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
