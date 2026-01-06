@@ -21,24 +21,17 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarTrigger,
+
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
-
-  React.useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(true);
-    }
-  }, [isMobile]);
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const menuItems = [
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
@@ -52,17 +45,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   ];
   const isAdmin = true;
   return (
-    <SidebarProvider 
-      open={sidebarOpen} 
-      onOpenChange={(open) => {
-        if (isMobile) {
-          setSidebarOpen(true);
-          return;
-        }
-        setSidebarOpen(open);
-      }}
+    <SidebarProvider
+      open={sidebarOpen}
+      onOpenChange={() => {}}
     >
       <Sidebar
+        data-sidebar="sidebar"
         collapsible="icon"
         className="border-r border-border/50 bg-sidebar transition-all duration-300"
       >
@@ -165,9 +153,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset className="bg-muted/5 min-h-screen relative flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            {/* SidebarTrigger is only visible on desktop to allow collapsing. On mobile, the sidebar is permanent. */}
-            <SidebarTrigger className="hover:text-primary transition-colors h-10 w-10 shrink-0 hidden md:flex" />
-            <div className="h-4 w-px bg-border hidden sm:block" />
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block truncate">
               {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
             </h2>
