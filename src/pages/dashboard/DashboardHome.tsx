@@ -1,28 +1,30 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Activity, 
-  Layers, 
-  Users, 
+import {
+  Activity,
+  Layers,
+  Users,
   Zap,
   ArrowUpRight,
   MousePointer2,
   TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
 import { api } from '@/lib/api-client';
 import type { UserProfile } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 const CHART_DATA = [
   { name: 'Mon', usage: 4000 },
   { name: 'Tue', usage: 3000 },
@@ -100,9 +102,9 @@ export function DashboardHome() {
                     <span className="text-primary">{profile?.itemCount} / {profile?.plan?.itemLimit}</span>
                   </div>
                   <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary shadow-glow transition-all duration-500" 
-                      style={{ width: `${((profile?.itemCount || 0) / (profile?.plan?.itemLimit || 1)) * 100}%` }} 
+                    <div
+                      className="h-full bg-primary shadow-glow transition-all duration-500"
+                      style={{ width: `${((profile?.itemCount || 0) / (profile?.plan?.itemLimit || 1)) * 100}%` }}
                     />
                   </div>
                 </div>

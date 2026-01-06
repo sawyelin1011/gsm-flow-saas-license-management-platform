@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   Terminal,
   LifeBuoy,
-  ShieldAlert
+  ShieldAlert,
+  Zap
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -38,7 +39,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
-  const isAdmin = React.useMemo(() => 
+  const isAdmin = React.useMemo(() =>
     profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
     [profile]
   );

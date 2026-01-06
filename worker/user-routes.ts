@@ -55,8 +55,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // API TESTER
   app.post('/api/test', async (c) => {
     const body = await c.req.json().catch(() => ({}));
-    const headers: Record<string, string> = {};
-    c.req.header().forEach((v, k) => { headers[k] = v; });
+    const headers = c.req.header();
     return ok(c, {
       message: "Worker endpoint active",
       timestamp: new Date().toISOString(),
