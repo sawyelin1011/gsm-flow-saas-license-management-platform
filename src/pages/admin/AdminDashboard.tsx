@@ -47,19 +47,21 @@ export function AdminDashboard() {
   return (
     <div className="space-y-6 md:space-y-8 max-w-full overflow-hidden">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Global Overview</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Global Overview</h1>
         <p className="text-xs md:text-base text-muted-foreground font-medium">Platform growth and cluster health monitoring.</p>
       </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard title="Users" value={stats?.userCount?.toString() || "..."} icon={<Users className="w-4 h-4" />} description="Active" />
-        <StatCard title="Tenants" value={stats?.tenantCount?.toString() || "..."} icon={<Server className="w-4 h-4" />} description="Nodes" />
-        <StatCard title="Revenue" value={`${stats?.revenue || "0"}`} icon={<DollarSign className="w-4 h-4" />} description="MRR" />
+        <StatCard title="Tenants" value={stats?.itemCount?.toString() || "..."} icon={<Server className="w-4 h-4" />} description="Nodes" />
+        <StatCard title="Revenue" value={`$${stats?.revenue || "0"}`} icon={<DollarSign className="w-4 h-4" />} description="MRR" />
         <StatCard title="Health" value="99.9%" icon={<Activity className="w-4 h-4" />} description="Uptime" />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <Card className="xl:col-span-2 border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[350px]">
           <CardHeader className="p-4 border-b bg-muted/5">
-            <CardTitle className="text-base flex items-center gap-2"><TrendingUp className="w-5 h-5 text-primary" /> Traffic Trends</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2 text-foreground font-bold">
+              <TrendingUp className="w-5 h-5 text-primary" /> Traffic Trends
+            </CardTitle>
             <CardDescription className="text-xs">License validation attempts (Last 30 days)</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 p-2 pt-6">
@@ -73,13 +75,13 @@ export function AdminDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="hsl(var(--muted-foreground))" 
-                    fontSize={10} 
-                    tickLine={false} 
-                    axisLine={false} 
-                    hide={isMobile} 
+                  <XAxis
+                    dataKey="date"
+                    stroke="hsl(var(--muted-foreground))"
+                    fontSize={10}
+                    tickLine={false}
+                    axisLine={false}
+                    hide={isMobile}
                   />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
@@ -91,23 +93,31 @@ export function AdminDashboard() {
         </Card>
         <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col">
           <CardHeader className="p-4 border-b bg-muted/5">
-            <CardTitle className="text-base flex items-center gap-2"><Clock className="w-5 h-5 text-primary" /> Recent Nodes</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2 text-foreground font-bold">
+              <Clock className="w-5 h-5 text-primary" /> Recent Nodes
+            </CardTitle>
             <CardDescription className="text-xs">Latest cluster deployments</CardDescription>
           </CardHeader>
           <CardContent className="p-0 flex-1">
-            <ScrollArea className="h-full w-full">
+            <ScrollArea className="h-[300px] w-full">
               <div className="divide-y divide-border/50">
-                {recentTenants?.items?.slice(0, 10).map((tenant: any) => (
-                  <div key={tenant.id} className="p-4 flex items-center justify-between hover:bg-muted/10 transition-colors">
-                    <div className="min-w-0">
-                      <p className="font-bold text-xs truncate">{tenant.name}</p>
-                      <p className="text-[10px] font-mono text-muted-foreground truncate">{tenant.domain}</p>
+                {recentTenants?.items?.length > 0 ? (
+                  recentTenants.items.slice(0, 10).map((tenant: any) => (
+                    <div key={tenant.id} className="p-4 flex items-center justify-between hover:bg-muted/10 transition-colors">
+                      <div className="min-w-0">
+                        <p className="font-bold text-xs truncate text-foreground">{tenant.name}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground truncate">{tenant.domain}</p>
+                      </div>
+                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] uppercase px-1.5 shrink-0 ml-2">
+                        {tenant.status}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-none text-[9px] uppercase px-1.5 shrink-0 ml-2">
-                      {tenant.status}
-                    </Badge>
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-xs text-muted-foreground italic">
+                    No recent activity records.
                   </div>
-                ))}
+                )}
               </div>
               <ScrollBar />
             </ScrollArea>
@@ -116,27 +126,29 @@ export function AdminDashboard() {
       </div>
       <Card className="border-border/50 shadow-sm overflow-hidden">
         <CardHeader className="p-4 border-b bg-muted/5">
-          <CardTitle className="text-base">System Audit Log</CardTitle>
+          <CardTitle className="text-base text-foreground font-bold">System Audit Log</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
             <table className="w-full text-sm min-w-[600px]">
               <thead>
                 <tr className="border-b bg-muted/30">
-                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider">Tenant</th>
-                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider">Identity</th>
-                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider">Provisioned</th>
-                  <th className="h-10 px-4 text-right font-bold text-[10px] uppercase tracking-wider">Status</th>
+                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Tenant</th>
+                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Identity</th>
+                  <th className="h-10 px-4 text-left font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Provisioned</th>
+                  <th className="h-10 px-4 text-right font-bold text-[10px] uppercase tracking-wider text-muted-foreground">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {recentTenants?.items?.map((tenant: any) => (
                   <tr key={tenant.id} className="border-b hover:bg-muted/10 transition-colors">
-                    <td className="p-4 font-bold text-xs">{tenant.name}</td>
+                    <td className="p-4 font-bold text-xs text-foreground">{tenant.name}</td>
                     <td className="p-4 text-xs text-muted-foreground">{tenant.ownerId}</td>
-                    <td className="p-4 font-mono text-[10px]">{format(tenant.createdAt, 'MMM dd, HH:mm')}</td>
+                    <td className="p-4 font-mono text-[10px] text-muted-foreground">
+                      {tenant.createdAt ? format(tenant.createdAt, 'MMM dd, HH:mm') : 'N/A'}
+                    </td>
                     <td className="p-4 text-right">
-                      <Badge variant="outline" className="text-[9px] uppercase">{tenant.status}</Badge>
+                      <Badge variant="outline" className="text-[9px] uppercase text-foreground">{tenant.status}</Badge>
                     </td>
                   </tr>
                 ))}
@@ -156,7 +168,7 @@ function StatCard({ title, value, icon, description }: { title: string; value: s
         <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
         <div className="text-muted-foreground/60">{icon}</div>
       </div>
-      <div className="text-lg md:text-2xl font-bold tracking-tight truncate">{value}</div>
+      <div className="text-lg md:text-2xl font-bold tracking-tight text-foreground truncate">{value}</div>
       <p className="text-[8px] md:text-[10px] text-muted-foreground mt-1 truncate font-medium">{description}</p>
     </Card>
   );

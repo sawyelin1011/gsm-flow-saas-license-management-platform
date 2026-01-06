@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
+import { cn } from "@/lib/utils";
 export function Settings() {
   const [isExporting, setIsExporting] = React.useState(false);
   const handleSave = (e: React.FormEvent) => {
@@ -155,9 +156,9 @@ export function Settings() {
                   <p className="text-xs font-bold uppercase tracking-tighter">Full Registry Export</p>
                   <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest opacity-50">JSON Snapshot</p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  onClick={handleExport} 
+                <Button
+                  variant="outline"
+                  onClick={handleExport}
                   disabled={isExporting}
                   className="h-10 text-[10px] font-black uppercase tracking-widest w-full sm:w-auto min-w-[140px]"
                 >
