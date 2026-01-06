@@ -118,10 +118,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/support', async (c) => {
     try {
-      const { subject, message, category } = (await c.req.json()) as {
-        subject?: string;
-        message?: string;
-        category?: SupportTicketCategory
+      const { subject, message, category } = (await c.req.json()) as { 
+        subject?: string; 
+        message?: string; 
+        category?: SupportTicketCategory 
       };
       if (!subject || subject.trim().length < 5) return bad(c, 'Subject is too short');
       if (!message || message.trim().length < 20) return bad(c, 'Details are too short');
@@ -139,7 +139,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return bad(c, 'Failed to submit support request');
     }
   });
-  // PUBLIC LICENSE VALIDATION (Cachable Endpoint)
+  // PUBLIC LICENSE VALIDATION
   app.post('/api/validate-license', async (c) => {
     try {
       const { key, domain } = (await c.req.json()) as { key?: string; domain?: string };
@@ -189,6 +189,30 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return ok(c, (await UserEntity.list(c.env)).items);
     } catch (e) {
       return ok(c, []);
+    }
+  });
+  app.post('/api/admin/users/:id/plan', async (c) => {
+    try {
+      const id = c.req.param('id');
+      const { planId } = (await c.req.json()) as { planId: string };
+      const plan = MOCK_PLANS.find(p => p.id === planId);
+      if (!plan) return bad(c, 'Invalid plan selection');
+      const user = new UserEntity(c.env, id);
+      if (!await user.exists()) return notFound(c, 'User not found');
+      await user.patch({ planId });
+      // Administrative Audit Invoice (Free or Adjustment)
+      await InvoiceEntity.create(c.env, {
+        id: crypto.randomUUID(),
+        userId: id,
+        amount: 0, // Admin overrides are usually tracked at 0 or specialized
+        date: Date.now(),
+        status: 'paid',
+        planName: `${plan.name} (Admin Update)`,
+        currency: 'USD'
+      });
+      return ok(c, await user.getState());
+    } catch (e) {
+      return bad(c, 'Failed to update user plan');
     }
   });
   app.get('/api/admin/tenants', async (c) => {

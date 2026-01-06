@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   LayoutDashboard,
   Server,
@@ -7,7 +8,6 @@ import {
   LogOut,
   ShieldCheck,
   ShieldAlert,
-  BookOpen,
   LifeBuoy
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -25,14 +25,20 @@ import {
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { api } from '@/lib/api-client';
+import type { UserProfile } from '@shared/types';
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(true);
+  const { data: profile } = useQuery<UserProfile>({
+    queryKey: ['me'],
+    queryFn: () => api<UserProfile>('/api/me'),
+  });
+  const isAdmin = profile?.id === 'admin-demo' || profile?.email?.includes('admin');
   React.useEffect(() => {
     if (isMobile) {
       setOpen(false);
@@ -49,21 +55,32 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   ];
   const adminItems = [
     { title: 'Admin', icon: ShieldAlert, href: '/dashboard/admin', colorClass: 'icon-gradient-blue', hoverClass: 'hover-glow-blue' },
+    { title: 'User Mgmt', icon: ShieldAlert, href: '/dashboard/admin/users', colorClass: 'icon-gradient-blue', hoverClass: 'hover-glow-blue' },
   ];
-  const isAdmin = true;
+  const getCurrentTitle = () => {
+    const path = location.pathname;
+    if (path === '/dashboard/admin/users') return 'User Management';
+    if (path === '/dashboard/admin') return 'Admin Panel';
+    const item = menuItems.find(i => i.href === path);
+    return item?.title || 'Dashboard';
+  };
+  const handleLogout = () => {
+    navigate('/', { replace: true });
+  };
   if (isMobile) {
     return (
       <div className="flex min-h-screen bg-muted/5">
-        {/* Fixed Thin Mobile Sidebar */}
         <aside className="fixed left-0 top-0 bottom-0 w-12 bg-sidebar border-r border-border/50 z-50 flex flex-col items-center py-4 gap-6 mobile-sidebar-shadow">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
-          <div className="flex-1 flex flex-col gap-4">
-            {[...menuItems, ...(isAdmin ? adminItems : [])].map((item) => (
+          <nav className="flex-1 flex flex-col gap-4" aria-label="Mobile navigation">
+            {[...menuItems, ...(isAdmin ? adminItems.slice(0, 1) : [])].map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
+                title={item.title}
+                aria-label={item.title}
                 className={cn(
                   "w-8 h-8 rounded-lg flex items-center justify-center text-white transition-all duration-200",
                   item.colorClass,
@@ -74,19 +91,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <item.icon className="w-4 h-4" />
               </Link>
             ))}
-          </div>
+          </nav>
           <button
-            onClick={() => navigate('/')}
+            onClick={handleLogout}
+            aria-label="Logout"
             className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
           >
             <LogOut className="w-4 h-4" />
           </button>
         </aside>
-        {/* Mobile Main Area */}
         <div className="flex-1 ml-12 flex flex-col min-w-0">
           <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
             <h2 className="text-sm font-bold truncate uppercase tracking-widest text-primary">
-              {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'GSM FLOW'}
+              {getCurrentTitle()}
             </h2>
             <div className="flex items-center gap-2">
               <ThemeToggle className="static" />
@@ -145,11 +162,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
-                      isActive={location.pathname === item.href}
+                      isActive={location.pathname.startsWith(item.href)}
                       tooltip={item.title}
                       className={cn(
                         "h-10 transition-all",
-                        location.pathname === item.href && "bg-primary/10 text-primary"
+                        location.pathname.startsWith(item.href) && "bg-primary/10 text-primary"
                       )}
                     >
                       <Link to={item.href}>
@@ -168,7 +185,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-destructive group-data-[collapsible=icon]:justify-center"
-            onClick={() => navigate('/')}
+            onClick={handleLogout}
           >
             <LogOut className="w-4 h-4 mr-2 group-data-[collapsible=icon]:mr-0" />
             <span className="group-data-[collapsible=icon]:hidden">Logout</span>
@@ -178,7 +195,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <SidebarInset className="bg-muted/5 min-h-screen flex flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-8 backdrop-blur-md">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-            {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
+            {getCurrentTitle()}
           </h2>
           <ThemeToggle className="static" />
         </header>

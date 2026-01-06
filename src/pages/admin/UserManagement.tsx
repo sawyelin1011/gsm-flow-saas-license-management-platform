@@ -1,13 +1,14 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, 
-  MoreHorizontal, 
-  UserPlus, 
-  Shield, 
-  Ban, 
-  History,
-  Mail
+import {
+  Search,
+  MoreHorizontal,
+  UserPlus,
+  Shield,
+  Ban,
+  Mail,
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import {
   Card,
@@ -45,115 +46,145 @@ export function UserManagement() {
     queryFn: () => api('/api/admin/users'),
   });
   const updatePlanMutation = useMutation({
-    mutationFn: ({ id, planId }: { id: string; planId: string }) => 
-      api(`/api/admin/users/${id}/plan`, { method: 'POST', body: JSON.stringify({ planId }) }),
+    mutationFn: ({ id, planId }: { id: string; planId: string }) =>
+      api(`/api/admin/users/${id}/plan`, { 
+        method: 'POST', 
+        body: JSON.stringify({ planId }) 
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('User plan updated');
-    }
+      toast.success('User subscription adjusted');
+    },
+    onError: (err: any) => toast.error(err?.message || 'Update failed')
   });
-  const filteredUsers = users?.filter(u => 
-    u.name.toLowerCase().includes(search.toLowerCase()) || 
+  const filteredUsers = users?.filter(u =>
+    u.name.toLowerCase().includes(search.toLowerCase()) ||
     u.email.toLowerCase().includes(search.toLowerCase())
   );
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground">Oversee all registered customers and their subscription status.</p>
+          <h1 className="text-3xl font-bold tracking-tight">User Clusters</h1>
+          <p className="text-muted-foreground">Manage global subscription access and operational authority.</p>
         </div>
-        <Button className="btn-gradient">
-          <UserPlus className="mr-2 h-4 w-4" /> Manual Register
+        <Button className="btn-gradient shadow-glow">
+          <UserPlus className="mr-2 h-4 w-4" /> Provision Account
         </Button>
       </div>
-      <Card className="border-border/50 shadow-sm">
-        <CardHeader>
+      <Card className="border-border/50 shadow-sm overflow-hidden">
+        <CardHeader className="bg-muted/5 border-b">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle>Platform Users</CardTitle>
-              <CardDescription>A total of {users?.length || 0} users registered.</CardDescription>
+              <CardTitle className="text-lg">Directory</CardTitle>
+              <CardDescription>Registry of {users?.length || 0} distributed operators.</CardDescription>
             </div>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <div className="relative w-full sm:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search users..."
-                className="pl-8 bg-muted/50"
+                placeholder="Search by identity or email..."
+                className="pl-9 bg-background/50 border-border/50"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Plan</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">Loading users...</TableCell>
+                  <TableHead className="w-[300px]">Operator</TableHead>
+                  <TableHead>Subscription</TableHead>
+                  <TableHead>State</TableHead>
+                  <TableHead>Authorized On</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : filteredUsers?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">No users found.</TableCell>
-                </TableRow>
-              ) : (
-                filteredUsers?.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-xs text-muted-foreground">{user.email}</span>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-32 text-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Synchronizing Directory...</span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="capitalize">
-                        {user.planId}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20">
-                        Active
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {new Date().toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuLabel>Manage User</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => window.location.href = `mailto:${user.email}`}>
-                            <Mail className="mr-2 h-4 w-4" /> Email User
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'professional' })}>
-                            <Shield className="mr-2 h-4 w-4" /> Upgrade to Pro
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
-                            <Ban className="mr-2 h-4 w-4" /> Suspend Account
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                  </TableRow>
+                ) : filteredUsers?.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                      No matching operators found in the registry.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  filteredUsers?.map((user) => (
+                    <TableRow key={user.id} className="hover:bg-muted/5 transition-colors">
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-bold text-sm">{user.name}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground">{user.email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize text-[10px] font-black border-primary/10">
+                          {user.planId}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                          <span className="text-[10px] font-bold uppercase tracking-tighter">Active</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-[10px] font-mono">
+                        {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/5">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56 glass">
+                            <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/60">Operator Command</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => window.location.href = `mailto:${user.email}`}>
+                              <Mail className="mr-2 h-4 w-4 text-primary" /> Email Identity
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="font-bold"
+                              disabled={user.planId === 'professional' || updatePlanMutation.isPending}
+                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'professional' })}
+                            >
+                              {updatePlanMutation.isPending ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                <Shield className="mr-2 h-4 w-4 text-cyan-500" />
+                              )}
+                              Elevate to Professional
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="font-bold"
+                              disabled={user.planId === 'enterprise' || updatePlanMutation.isPending}
+                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'enterprise' })}
+                            >
+                              <CheckCircle2 className="mr-2 h-4 w-4 text-indigo-500" /> Elevate to Enterprise
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive font-bold focus:bg-destructive/10">
+                              <Ban className="mr-2 h-4 w-4" /> Revoke Authority
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
