@@ -63,6 +63,7 @@
   }
   body {
     @apply bg-background text-foreground antialiased overflow-x-hidden;
+    min-width: 320px;
   }
 }
 @layer components {
@@ -76,7 +77,6 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  /* Icon Gradients */
   .icon-gradient-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
   .icon-gradient-purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
   .icon-gradient-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
@@ -103,6 +103,10 @@
   }
   .floating {
     animation: float 3s ease-in-out infinite;
+  }
+  /* Standardized dashboard content utility */
+  .dashboard-content {
+    @apply w-full max-w-full mx-auto space-y-6 md:space-y-8;
   }
 }
 @keyframes float {

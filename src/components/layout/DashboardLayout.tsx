@@ -61,7 +61,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const path = location.pathname;
     if (path === '/dashboard/admin/users') return 'User Management';
     if (path === '/dashboard/admin') return 'Admin Panel';
-    const item = menuItems.find(i => i.href === path);
+    const item = [...menuItems, ...adminItems].find(i => i.href === path);
     return item?.title || 'Dashboard';
   };
   const handleLogout = () => {
@@ -109,8 +109,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <ThemeToggle className="static" />
             </div>
           </header>
-          <main className="flex-1 p-4 overflow-x-hidden">
-            <div className="space-y-6 animate-fade-in max-w-full">
+          <main className="flex-1 overflow-x-hidden p-4 md:p-8">
+            <div className="animate-fade-in">
               {children}
             </div>
           </main>
@@ -199,8 +199,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </h2>
           <ThemeToggle className="static" />
         </header>
-        <main className="flex-1 w-full max-w-7xl mx-auto p-8">
-          <div className="space-y-8 animate-fade-in">
+        <main className="flex-1 w-full p-4 md:p-8">
+          <div className="animate-fade-in">
             {children}
           </div>
         </main>
