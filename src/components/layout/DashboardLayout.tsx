@@ -21,17 +21,25 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-
+  SidebarRail,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const isMobile = useIsMobile();
+  const [open, setOpen] = React.useState(true);
+
+  React.useEffect(() => {
+    if (isMobile) {
+      setOpen(false);
+    }
+  }, [isMobile]);
   const menuItems = [
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
@@ -46,8 +54,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isAdmin = true;
   return (
     <SidebarProvider
-      open={sidebarOpen}
-      onOpenChange={() => {}}
+      open={open}
+      onOpenChange={setOpen}
     >
       <Sidebar
         data-sidebar="sidebar"
@@ -129,6 +137,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarMenu>
           </div>
         </SidebarContent>
+        <SidebarRail />
         <SidebarFooter className="p-4 border-t border-border/50">
           <div className="flex items-center gap-3 mb-4 overflow-hidden hidden md:flex">
             <Avatar className="w-8 h-8 border border-border">

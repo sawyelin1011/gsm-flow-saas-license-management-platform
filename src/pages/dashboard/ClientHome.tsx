@@ -52,7 +52,7 @@ export function ClientHome() {
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Node Status</h1>
         <p className="text-sm md:text-base text-muted-foreground font-medium">Monitoring active installations for {profile?.name}</p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Active Tenants"
           value={currentTenants.toString()}
@@ -78,7 +78,7 @@ export function ClientHome() {
           description="Standard recurring"
         />
       </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
         <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[350px] sm:min-h-[400px]">
           <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
             <CardTitle className="text-lg">License Traffic</CardTitle>
