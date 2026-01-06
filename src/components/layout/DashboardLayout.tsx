@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   Server,
@@ -7,7 +7,8 @@ import {
   LogOut,
   ShieldCheck,
   ShieldAlert,
-  BookOpen
+  BookOpen,
+  LifeBuoy
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -35,13 +36,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
     { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
     { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
+    { title: 'Support', icon: LifeBuoy, href: '/dashboard/support' },
     { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
   ];
   const adminItems = [
     { title: 'Global Overview', icon: ShieldAlert, href: '/dashboard/admin' },
     { title: 'User Management', icon: ShieldCheck, href: '/dashboard/admin/users' },
   ];
-  const isAdmin = true;
+  const isAdmin = true; // Shared mock user context simulates admin access
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <Sidebar collapsible="icon" className="border-r border-border/50 bg-sidebar">
@@ -63,8 +65,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   tooltip={item.title}
                   className={cn(
                     "h-10 px-4 transition-all",
-                    location.pathname === item.href 
-                      ? "bg-primary/10 text-primary border-r-2 border-primary" 
+                    location.pathname === item.href
+                      ? "bg-primary/10 text-primary border-r-2 border-primary"
                       : "hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
@@ -90,9 +92,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       tooltip={item.title}
                       className={cn(
                         "h-10 px-4 transition-all",
-                        location.pathname === item.href 
-                          ? "bg-primary/10 text-primary border-r-2 border-primary" 
-                          : "hover:bg-accent"
+                        location.pathname === item.href
+                          ? "bg-primary/10 text-primary border-r-2 border-primary"
+                          : "hover:bg-accent hover:text-accent-foreground"
                       )}
                     >
                       <Link to={item.href}>
@@ -110,7 +112,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="h-10 px-4" tooltip="API Documentation">
                   <Link to="/docs">
-                    <BookOpen className="w-5 h-5" /> 
+                    <BookOpen className="w-5 h-5" />
                     <span>API Documentation</span>
                   </Link>
                 </SidebarMenuButton>
@@ -145,7 +147,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <SidebarTrigger className="hover:text-primary transition-colors" />
             <div className="h-4 w-px bg-border hidden sm:block" />
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden sm:block">
-              {menuItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
+              {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
             </h2>
           </div>
           <div className="flex items-center gap-4">

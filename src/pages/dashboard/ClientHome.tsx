@@ -13,11 +13,12 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription
+  CardDescription,
+  CardFooter
 } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 import type { UserProfile } from '@shared/types';
 import {
   LineChart,
@@ -92,12 +93,12 @@ export function ClientHome() {
                 <Tooltip
                   contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="validations" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={3} 
-                  dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }} 
+                <Line
+                  type="monotone"
+                  dataKey="validations"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={3}
+                  dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 2, stroke: 'hsl(var(--card))' }}
                   activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>
@@ -116,9 +117,9 @@ export function ClientHome() {
                 <span className="font-mono font-bold text-primary">{currentTenants} / {tenantLimit}</span>
               </div>
               <div className="h-3 w-full bg-muted rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-cyan-500 to-primary transition-all duration-1000" 
-                  style={{ width: `${Math.min(usagePercentage, 100)}%` }} 
+                <div
+                  className="h-full bg-gradient-to-r from-cyan-500 to-primary transition-all duration-1000"
+                  style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
             </div>
@@ -158,7 +159,4 @@ function StatCard({ title, value, icon, description }: { title: string; value: s
       </CardContent>
     </Card>
   );
-}
-function CardFooter({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("p-6", className)}>{children}</div>;
 }
