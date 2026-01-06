@@ -2,7 +2,12 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ItemEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import { MOCK_PLANS } from "@shared/mock-data";
+
+const MOCK_PLANS = [
+  {id: 'basic', name: 'Basic', price: 0},
+  {id: 'pro', name: 'Pro', price: 29},
+  {id: 'enterprise', name: 'Enterprise', price: 99}
+];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   const userId = 'admin-demo';
   // ROOT / API DISCOVERY
