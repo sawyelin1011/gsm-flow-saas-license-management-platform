@@ -62,12 +62,16 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+  }
+  html {
+    @apply overflow-x-hidden;
   }
 }
 @layer components {
-  /* High-performance Mobile Sidebar: Permanently Docked */
+  /* RIGID PERMANENT MOBILE SIDEBAR DOCKING (Phase 10) */
   @media (max-width: 767px) {
+    /* Force sidebar to 64px icon-only mode forever on mobile */
     [data-sidebar="sidebar"] {
       --sidebar-width: 64px !important;
       display: flex !important;
@@ -81,24 +85,34 @@
       width: 64px !important;
       border-right: 1px solid hsl(var(--border));
     }
-    /* Force visibility of icons in collapsed state */
+    /* Prevent any drawer or expansion states from working on mobile */
+    [data-sidebar="sidebar"][data-state="expanded"],
     [data-sidebar="sidebar"][data-state="collapsed"] {
       width: 64px !important;
     }
-    /* Handle content margin to avoid overlapping with fixed sidebar */
+    /* Force the main content area to always respect the 64px sidebar dock */
     [data-sidebar="inset"] {
       margin-left: 64px !important;
       width: calc(100% - 64px) !important;
       min-width: 0 !important;
+      flex: 1 !important;
     }
-    /* Mobile Expansion Overlay (Drawer style) */
-    [data-sidebar="sidebar"][data-state="expanded"] {
-      width: 256px !important;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-    }
-    /* Hide text labels by default on mobile unless expanded */
-    [data-sidebar="sidebar"][data-state="collapsed"] .group-data-\[collapsible\=icon\]\:hidden {
+    /* Hide text labels, descriptive spans, and footer details rigidly */
+    [data-sidebar="sidebar"] span:not(.sr-only),
+    [data-sidebar="sidebar"] p,
+    [data-sidebar="sidebar"] .group-data-\[collapsible\=icon\]\:hidden {
       display: none !important;
+    }
+    /* Center icons in the 64px dock for thumb reachability */
+    [data-sidebar="sidebar"] a,
+    [data-sidebar="sidebar"] button {
+      justify-content: center !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    /* Adjust header height to align with standard mobile taps */
+    header {
+      height: 64px !important;
     }
   }
   .btn-gradient {

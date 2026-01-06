@@ -46,7 +46,7 @@ export function ClientHome() {
   const currentTenants = profile?.tenantCount ?? 0;
   const usagePercentage = (currentTenants / tenantLimit) * 100;
   return (
-    <div className="space-y-6 md:space-y-8 max-w-full overflow-x-hidden">
+    <div className="space-y-6 md:space-y-8 max-w-full overflow-hidden">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Node Status</h1>
         <p className="text-sm md:text-base text-muted-foreground font-medium">Monitoring active installations for {profile?.name}</p>
@@ -72,19 +72,19 @@ export function ClientHome() {
         />
         <StatCard
           title="Monthly Spend"
-          value={`${profile?.plan?.price ?? 0}`}
+          value={`$${profile?.plan?.price ?? 0}`}
           icon={<CreditCard className="w-4 h-4" />}
           description="Standard recurring"
         />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+        <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[350px] sm:min-h-[400px]">
           <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
             <CardTitle className="text-lg">License Traffic</CardTitle>
             <CardDescription>Network validation activity across all nodes</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 p-2 sm:p-6">
-            <div className="h-[300px] w-full">
+            <div className="h-[250px] sm:h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={MOCK_CHART_DATA}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
