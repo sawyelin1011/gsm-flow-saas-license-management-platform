@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, ItemEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-
 const MOCK_PLANS = [
   {id: 'basic', name: 'Basic', price: 0},
   {id: 'pro', name: 'Pro', price: 29},
@@ -11,7 +10,44 @@ const MOCK_PLANS = [
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   const userId = 'admin-demo';
   // ROOT / API DISCOVERY
-  app.get('/api', (c) => ok(c, { message: "GSM Flow SaaS API v1.0", status: "online" }));
+  app.get('/api', (c) => ok(c, { message: "SaaS Engine API v2.0", status: "online" }));
+  // PUBLIC LICENSE VALIDATION (Required for API Docs / Playground)
+  app.post('/api/validate-license', async (c) => {
+    try {
+      const { key, domain } = await c.req.json();
+      if (!key || !domain) return bad(c, 'Key and domain are required');
+      // In this multipurpose logic, "key" maps to Item ID and "domain" maps to Category
+      const itemInst = new ItemEntity(c.env, key);
+      if (!await itemInst.exists()) {
+        return ok(c, { 
+          valid: false, 
+          reason: 'License key not found in registry',
+          timestamp: Date.now() 
+        });
+      }
+      const state = await itemInst.getState();
+      const isDomainMatch = state.category.toLowerCase() === domain.toLowerCase();
+      if (!isDomainMatch) {
+        return ok(c, { 
+          valid: false, 
+          reason: 'Domain mismatch: Node not authorized for this target',
+          timestamp: Date.now() 
+        });
+      }
+      return ok(c, {
+        valid: true,
+        details: {
+          id: state.id,
+          name: state.title,
+          status: state.status,
+          authorizedAt: state.createdAt
+        },
+        timestamp: Date.now()
+      });
+    } catch (e) {
+      return bad(c, 'Validation authority internal error');
+    }
+  });
   // PROFILE
   app.get('/api/me', async (c) => {
     try {
@@ -67,7 +103,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       if (!plan) return bad(c, 'Invalid plan identifier');
       const user = new UserEntity(c.env, userId);
       await user.mutate(s => ({ ...s, planId }));
-      // Create a mock invoice for the upgrade
       await InvoiceEntity.create(c.env, {
         id: crypto.randomUUID(),
         userId,
@@ -156,7 +191,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/admin/tenants', async (c) => {
     try {
       const items = await ItemEntity.list(c.env);
-      // Map Item to the structure Admin Dashboard expects for "Tenants"
       const tenants = items.items.map(it => ({
         id: it.id,
         name: it.title,

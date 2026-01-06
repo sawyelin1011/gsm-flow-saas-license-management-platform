@@ -57,8 +57,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
   ];
   const getCurrentTitle = () => {
-    const item = [...menuItems, ...adminItems].find(i => i.href === pathname);
-    return item?.title || 'System Core';
+    const allItems = [...menuItems, ...adminItems];
+    const item = allItems.find(i => i.href === pathname);
+    if (item) return item.title;
+    // Handle nested sub-routes
+    if (pathname.startsWith('/dashboard/admin/users')) return 'Operator Mgmt';
+    if (pathname.startsWith('/dashboard/admin')) return 'System Overview';
+    return 'Core Console';
   };
   const handleLogout = () => window.location.replace('/');
   const MobileSidebar = () => (
@@ -156,7 +161,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
               <Zap className="w-5 h-5 text-primary shrink-0" />
               <span className="font-black text-xs uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">
-                GSM Flow
+                SaaS Engine
               </span>
             </SidebarHeader>
             <SidebarContent className="p-2">
@@ -169,8 +174,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       tooltip={item.title}
                       className={cn(
                         "h-11 w-full px-3 flex items-center gap-3 rounded-lg transition-all",
-                        pathname === item.href 
-                          ? "text-primary bg-primary/10 font-bold" 
+                        pathname === item.href
+                          ? "text-primary bg-primary/10 font-bold"
                           : "text-muted-foreground hover:text-primary hover:bg-accent"
                       )}
                     >
@@ -199,8 +204,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                           tooltip={item.title}
                           className={cn(
                             "h-11 w-full px-3 flex items-center gap-3 rounded-lg transition-all",
-                            pathname === item.href 
-                              ? "text-primary bg-primary/10 font-bold" 
+                            pathname === item.href
+                              ? "text-primary bg-primary/10 font-bold"
                               : "text-muted-foreground hover:text-primary hover:bg-accent"
                           )}
                         >
