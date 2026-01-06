@@ -38,7 +38,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
-  const isAdmin = profile?.id === 'admin-demo' || profile?.email?.includes('admin');
+  const isAdmin = profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin');
   React.useEffect(() => {
     if (isMobile) {
       setOpen(false);
@@ -60,7 +60,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const getCurrentTitle = () => {
     const path = location.pathname;
     if (path === '/dashboard/admin/users') return 'User Management';
-    if (path === '/dashboard/admin') return 'Admin Panel';
+    if (path === '/dashboard/admin') return 'Admin Dashboard';
     const item = [...menuItems, ...adminItems].find(i => i.href === path);
     return item?.title || 'Dashboard';
   };
@@ -75,7 +75,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <nav className="flex-1 flex flex-col gap-4" aria-label="Mobile navigation">
-            {[...menuItems, ...(isAdmin ? adminItems.slice(0, 1) : [])].map((item) => (
+            {[...menuItems, ...(isAdmin ? adminItems : [])].map((item) => (
               <Link
                 key={item.href}
                 to={item.href}

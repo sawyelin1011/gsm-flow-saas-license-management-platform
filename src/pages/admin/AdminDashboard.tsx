@@ -28,12 +28,14 @@ import { api } from '@/lib/api-client';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
 const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => ({
   date: format(new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000), 'MMM dd'),
   validations: Math.floor(Math.random() * 5000) + 2000,
   failures: Math.floor(Math.random() * 200),
 }));
 export function AdminDashboard() {
+  const isMobile = useIsMobile();
   const { data: stats } = useQuery<any>({
     queryKey: ['admin-stats'],
     queryFn: () => api('/api/admin/stats'),
@@ -51,7 +53,7 @@ export function AdminDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard title="Users" value={stats?.userCount?.toString() || "..."} icon={<Users className="w-4 h-4" />} description="Active" />
         <StatCard title="Tenants" value={stats?.tenantCount?.toString() || "..."} icon={<Server className="w-4 h-4" />} description="Nodes" />
-        <StatCard title="Revenue" value={`$${stats?.revenue || "0"}`} icon={<DollarSign className="w-4 h-4" />} description="MRR" />
+        <StatCard title="Revenue" value={`${stats?.revenue || "0"}`} icon={<DollarSign className="w-4 h-4" />} description="MRR" />
         <StatCard title="Health" value="99.9%" icon={<Activity className="w-4 h-4" />} description="Uptime" />
       </div>
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -71,7 +73,14 @@ export function AdminDashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} hide={window.innerWidth < 640} />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="hsl(var(--muted-foreground))" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    hide={isMobile} 
+                  />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Area type="monotone" dataKey="validations" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorVal)" strokeWidth={3} />

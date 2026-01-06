@@ -1,16 +1,16 @@
-import { ApiResponse } from "../../shared/types"
+import type { ApiResponse } from "@shared/types";
 /**
  * Enhanced API client with robust error handling for network failures,
  * worker cold starts, and structured API errors.
  */
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   try {
-    const res = await fetch(path, { 
-      headers: { 
+    const res = await fetch(path, {
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
-      }, 
-      ...init 
+      },
+      ...init
     });
     let json: ApiResponse<T>;
     try {

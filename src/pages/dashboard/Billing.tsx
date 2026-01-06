@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api-client';
@@ -28,7 +29,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 export function Billing() {
   const queryClient = useQueryClient();
-  const { data: profile } = useQuery<UserProfile>({
+  const { data: profile, isLoading: isLoadingProfile } = useQuery<UserProfile>({
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
@@ -50,7 +51,11 @@ export function Billing() {
     <div className="space-y-8 max-w-full">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl md:text-2xl font-bold">Billing</h1>
-        <Badge variant="outline" className="w-fit text-[9px] uppercase tracking-tighter">{profile?.plan?.name} Active</Badge>
+        {isLoadingProfile ? (
+          <Skeleton className="h-5 w-24" />
+        ) : (
+          <Badge variant="outline" className="w-fit text-[9px] uppercase tracking-tighter">{profile?.plan?.name} Active</Badge>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="md:col-span-2 border-primary shadow-glow bg-primary/[0.02]">
@@ -59,15 +64,27 @@ export function Billing() {
             <CardDescription className="text-[10px]">Monthly Subscription</CardDescription>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-4">
-            <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-primary">${profile?.plan?.price}</span>
-              <span className="text-xs text-muted-foreground">/mo</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px] font-medium text-muted-foreground">
-              {profile?.plan?.features.slice(0, 4).map((f) => (
-                <div key={f} className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-primary" /> {f}</div>
-              ))}
-            </div>
+            {isLoadingProfile ? (
+              <div className="space-y-4">
+                <Skeleton className="h-8 w-16" />
+                <div className="grid grid-cols-2 gap-2">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-primary">${profile?.plan?.price}</span>
+                  <span className="text-xs text-muted-foreground">/mo</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-[10px] font-medium text-muted-foreground">
+                  {profile?.plan?.features.slice(0, 4).map((f) => (
+                    <div key={f} className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-primary" /> {f}</div>
+                  ))}
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card className="p-4 flex flex-col justify-center gap-2 border-border/50">
@@ -90,14 +107,24 @@ export function Billing() {
               </TableHeader>
               <TableBody>
                 {isLoadingInvoices ? (
-                  <TableRow><TableCell colSpan={3} className="text-center h-12"><Loader2 className="w-4 h-4 animate-spin mx-auto" /></TableCell></TableRow>
-                ) : invoices?.map((inv) => (
-                  <TableRow key={inv.id} className="text-[10px]">
-                    <TableCell className="font-bold">{format(inv.date, 'MMM dd')}</TableCell>
-                    <TableCell className="text-primary font-black">${inv.amount}</TableCell>
-                    <TableCell className="text-right"><Button variant="ghost" className="h-6 text-[9px] px-2">PDF</Button></TableCell>
-                  </TableRow>
-                ))}
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                      <TableCell className="text-right"><Skeleton className="h-4 w-8 ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : invoices?.length === 0 ? (
+                  <TableRow><TableCell colSpan={3} className="text-center h-12 text-[10px] text-muted-foreground">No invoices found</TableCell></TableRow>
+                ) : (
+                  invoices?.map((inv) => (
+                    <TableRow key={inv.id} className="text-[10px]">
+                      <TableCell className="font-bold">{format(inv.date, 'MMM dd')}</TableCell>
+                      <TableCell className="text-primary font-black">${inv.amount}</TableCell>
+                      <TableCell className="text-right"><Button variant="ghost" className="h-6 text-[9px] px-2">PDF</Button></TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
             <ScrollBar orientation="horizontal" />
@@ -107,7 +134,7 @@ export function Billing() {
       <div className="space-y-4">
         <h2 className="text-sm font-bold flex items-center gap-2"><ArrowUpCircle className="w-4 h-4 text-primary" /> Upgrade</h2>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {MOCK_PLANS.filter(p => p.id !== profile?.planId).map((plan) => (
+          {MOCK_PLANS.filter(p => !isLoadingProfile && p.id !== profile?.planId).map((plan) => (
             <Card key={plan.id} className="p-3 flex flex-col justify-between border-border/50 hover:border-primary transition-all">
               <div className="space-y-1">
                 <h3 className="text-[10px] font-black uppercase">{plan.name}</h3>
@@ -121,6 +148,11 @@ export function Billing() {
               >
                 {upgradeMutation.isPending ? "..." : "Scale"}
               </Button>
+            </Card>
+          ))}
+          {isLoadingProfile && Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i} className="p-3 border-border/50">
+              <Skeleton className="h-12 w-full" />
             </Card>
           ))}
         </div>
