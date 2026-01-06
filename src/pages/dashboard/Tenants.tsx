@@ -1,12 +1,9 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Server, Plus, Copy, Check, ExternalLink, MoreVertical, Trash2, ShieldAlert, ShieldCheck, Search, Globe, Loader2 } from 'lucide-react';
+import { Server, Plus, Copy, Check, MoreVertical, Trash2, ShieldAlert, ShieldCheck, Globe, Loader2 } from 'lucide-react';
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,7 +25,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { Tenant } from '@shared/types';
@@ -49,174 +45,125 @@ export function Tenants() {
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      queryClient.invalidateQueries({ queryKey: ['me'] });
       setIsCreateOpen(false);
-      toast.success('Node provisioned and signed');
+      toast.success('Node provisioned');
     },
-    onError: (err: any) => {
-      toast.error(err?.message || 'Provisioning failed');
-    },
+    onError: (err: any) => toast.error(err?.message || 'Failed'),
   });
   const statusMutation = useMutation({
     mutationFn: (id: string) => api<Tenant>(`/api/tenants/${id}/status`, { method: 'PATCH' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tenants'] }),
-    onError: () => toast.error('Failed to update node status'),
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api(`/api/tenants/${id}`, { method: 'DELETE' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tenants'] });
-      queryClient.invalidateQueries({ queryKey: ['me'] });
-      toast.success('Node purged from authority');
-    },
-    onError: () => toast.error('Failed to delete node'),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tenants'] }),
   });
   const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const name = (formData.get('name') as string).trim();
     const domain = (formData.get('domain') as string).trim();
-    if (name.length < 3) return toast.error('Identifier must be at least 3 characters');
-    if (!DOMAIN_REGEX.test(domain)) return toast.error('Please enter a valid FQDN (e.g. node.domain.com)');
+    if (!DOMAIN_REGEX.test(domain)) return toast.error('Invalid domain');
     createMutation.mutate({ name, domain });
   };
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(text);
-    toast.success('Signature copied to clipboard');
+    toast.success('Copied');
     setTimeout(() => setCopiedKey(null), 2000);
   };
   return (
-    <div className="space-y-6 md:space-y-8 max-w-full overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Active Nodes</h1>
-          <p className="text-sm text-muted-foreground font-medium">Manage distributed GSM service installations.</p>
+    <div className="space-y-6 max-w-full">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold">Active Nodes</h1>
+          <p className="text-[10px] md:text-sm text-muted-foreground uppercase tracking-widest font-black">Cluster Fleet</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient shadow-glow font-bold h-11 w-full sm:w-auto">
-              <Plus className="mr-2 h-5 w-5" /> Provision Node
+            <Button size="sm" className="btn-gradient shadow-glow font-bold">
+              <Plus className="mr-1 h-4 w-4" /> Provision
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[450px] w-[95vw] rounded-2xl glass max-h-[90vh] overflow-y-auto">
-            <form onSubmit={handleCreate} className="space-y-6">
+          <DialogContent className="w-[90vw] sm:max-w-md rounded-xl">
+            <form onSubmit={handleCreate} className="space-y-4">
               <DialogHeader>
-                <DialogTitle>Provision New Node</DialogTitle>
-                <DialogDescription>Enter details for the target deployment cluster. A unique cryptographic key will be generated.</DialogDescription>
+                <DialogTitle>Provision Node</DialogTitle>
+                <DialogDescription>Add a new installation target.</DialogDescription>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Node Identifier</Label>
-                  <Input id="name" name="name" placeholder="e.g. EU Production" required className="h-11" />
+              <div className="space-y-4 py-2">
+                <div className="space-y-1">
+                  <Label>Identifier</Label>
+                  <Input name="name" placeholder="Production EU" required />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="domain">Target Domain</Label>
-                  <Input id="domain" name="domain" placeholder="e.g. gsm.cluster.local" required className="h-11" />
+                <div className="space-y-1">
+                  <Label>FQDN Domain</Label>
+                  <Input name="domain" placeholder="node.gsmflow.com" required />
                 </div>
               </div>
-              <DialogFooter className="flex-col sm:flex-row gap-3">
-                <Button type="button" variant="ghost" onClick={() => setIsCreateOpen(false)} className="h-11">Cancel</Button>
-                <Button type="submit" disabled={createMutation.isPending} className="btn-gradient font-bold h-11">
-                  {createMutation.isPending ? (
-                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Signing...</>
-                  ) : "Finalize Deployment"}
+              <DialogFooter>
+                <Button type="submit" disabled={createMutation.isPending} className="w-full btn-gradient">
+                  {createMutation.isPending ? "Signing..." : "Provision Node"}
                 </Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </div>
-      <div className="grid grid-cols-1 gap-4">
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center gap-4">
-            <Loader2 className="animate-spin h-8 w-8 text-primary" />
-            <p className="text-xs text-muted-foreground font-medium">Synchronizing with authority...</p>
-          </div>
-        ) : data?.items.length === 0 ? (
-          <Card className="border-dashed py-20 text-center bg-muted/5 px-4 shadow-sm">
-            <Server className="text-muted-foreground w-12 h-12 mx-auto mb-4 opacity-30" />
-            <h3 className="text-lg font-bold">No nodes provisioned</h3>
-            <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">Start by creating your first cluster installation to begin license distribution.</p>
-            <Button onClick={() => setIsCreateOpen(true)} className="btn-gradient px-10 h-11 font-bold shadow-glow">Create First Node</Button>
-          </Card>
-        ) : (
-          data?.items.map((tenant) => (
-            <Card key={tenant.id} className={cn(
-              "overflow-hidden border-border/50 hover:border-primary/50 hover:shadow-glow transition-all duration-300 group",
-              tenant.status === 'suspended' && "opacity-75 grayscale-[0.2]"
-            )}>
-              <div className="p-4 sm:p-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+      {isLoading ? (
+        <div className="py-12 flex justify-center"><Loader2 className="animate-spin text-primary" /></div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {data?.items.map((tenant) => (
+            <Card key={tenant.id} className="overflow-hidden border-border/50 group">
+              <div className="p-4 flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
                     <div className={cn(
-                      "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105",
-                      tenant.status === 'active' ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                      "w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-sm",
+                      tenant.status === 'active' ? "bg-primary" : "bg-muted text-muted-foreground"
                     )}>
-                      <Server className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <Server className="w-5 h-5" />
                     </div>
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold truncate group-hover:text-primary transition-colors">{tenant.name}</h3>
-                        <Badge className={cn(
-                          "text-[9px] uppercase font-black h-5 px-2 tracking-wider",
-                          tenant.status === 'active' ? "bg-cyan-500 hover:bg-cyan-600" : "bg-rose-500 hover:bg-rose-600"
-                        )}>
-                          {tenant.status}
-                        </Badge>
+                    <div>
+                      <h3 className="text-sm font-bold truncate max-w-[120px]">{tenant.name}</h3>
+                      <div className="flex items-center gap-1 text-[9px] text-muted-foreground font-mono">
+                        <Globe className="w-2.5 h-2.5" /> {tenant.domain}
                       </div>
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 font-mono truncate">
-                        <Globe className="w-3.5 h-3.5 text-primary shrink-0 opacity-70" /> {tenant.domain}
-                      </p>
                     </div>
                   </div>
-                  <div className="flex-1 w-full max-w-sm lg:max-w-md">
-                    <div className="bg-muted/30 p-3 rounded-xl border border-border/50 flex items-center justify-between gap-3 transition-colors hover:border-primary/30">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-[9px] uppercase font-black text-muted-foreground/60 tracking-widest truncate mb-0.5">Cryptographic Signature</p>
-                        <code className="text-xs font-mono font-bold text-primary truncate block">{tenant.licenseKey}</code>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-9 w-9 hover:bg-background shrink-0 text-muted-foreground hover:text-primary"
-                        onClick={() => copyToClipboard(tenant.licenseKey)}
-                      >
-                        {copiedKey === tenant.licenseKey ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="w-4 h-4" />
                       </Button>
-                    </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => statusMutation.mutate(tenant.id)}>
+                        {tenant.status === 'active' ? <ShieldAlert className="w-4 h-4 mr-2" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
+                        Toggle Auth
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-destructive" onClick={() => deleteMutation.mutate(tenant.id)}>
+                        <Trash2 className="w-4 h-4 mr-2" /> Purge
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div className="bg-muted/30 p-2 rounded-lg border border-border/50 flex items-center justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[8px] uppercase font-black text-muted-foreground/60 tracking-widest mb-0.5">Key Signature</p>
+                    <code className="text-[10px] font-mono font-bold text-primary truncate block">{tenant.licenseKey}</code>
                   </div>
-                  <div className="flex items-center gap-2 justify-end shrink-0">
-                    <Button variant="outline" size="sm" className="h-9 px-4 font-bold border-primary/20 hover:bg-primary/5 hidden sm:flex transition-all">
-                      View Logs
-                    </Button>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-accent">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 glass">
-                        <DropdownMenuItem onClick={() => statusMutation.mutate(tenant.id)} className="font-medium">
-                          {tenant.status === 'active' ? (
-                            <><ShieldAlert className="w-4 h-4 mr-2 text-rose-500" /> Suspend Auth</>
-                          ) : (
-                            <><ShieldCheck className="w-4 h-4 mr-2 text-emerald-500" /> Reauthorize Node</>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive font-bold" onClick={() => deleteMutation.mutate(tenant.id)}>
-                          <Trash2 className="w-4 h-4 mr-2" /> Purge Node
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                  <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copyToClipboard(tenant.licenseKey)}>
+                    {copiedKey === tenant.licenseKey ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                  </Button>
                 </div>
               </div>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

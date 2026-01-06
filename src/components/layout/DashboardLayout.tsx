@@ -28,44 +28,88 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [open, setOpen] = React.useState(true);
-
   React.useEffect(() => {
-    setOpen(!isMobile);
+    if (isMobile) {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
   }, [isMobile]);
   const menuItems = [
-    { title: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
-    { title: 'Tenants', icon: Server, href: '/dashboard/tenants' },
-    { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
-    { title: 'Support', icon: LifeBuoy, href: '/dashboard/support' },
-    { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
+    { title: 'Overview', icon: LayoutDashboard, href: '/dashboard', colorClass: 'icon-gradient-cyan', hoverClass: 'hover-glow-cyan' },
+    { title: 'Tenants', icon: Server, href: '/dashboard/tenants', colorClass: 'icon-gradient-purple', hoverClass: 'hover-glow-purple' },
+    { title: 'Billing', icon: CreditCard, href: '/dashboard/billing', colorClass: 'icon-gradient-amber', hoverClass: 'hover-glow-amber' },
+    { title: 'Support', icon: LifeBuoy, href: '/dashboard/support', colorClass: 'icon-gradient-rose', hoverClass: 'hover-glow-rose' },
+    { title: 'Settings', icon: Settings, href: '/dashboard/settings', colorClass: 'icon-gradient-indigo', hoverClass: 'hover-glow-indigo' },
   ];
   const adminItems = [
-    { title: 'Global Overview', icon: ShieldAlert, href: '/dashboard/admin' },
-    { title: 'User Management', icon: ShieldCheck, href: '/dashboard/admin/users' },
+    { title: 'Admin', icon: ShieldAlert, href: '/dashboard/admin', colorClass: 'icon-gradient-blue', hoverClass: 'hover-glow-blue' },
   ];
   const isAdmin = true;
+  if (isMobile) {
+    return (
+      <div className="flex min-h-screen bg-muted/5">
+        {/* Fixed Thin Mobile Sidebar */}
+        <aside className="fixed left-0 top-0 bottom-0 w-12 bg-sidebar border-r border-border/50 z-50 flex flex-col items-center py-4 gap-6 mobile-sidebar-shadow">
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow shrink-0">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div className="flex-1 flex flex-col gap-4">
+            {[...menuItems, ...(isAdmin ? adminItems : [])].map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center text-white transition-all duration-200",
+                  item.colorClass,
+                  item.hoverClass,
+                  location.pathname === item.href ? "ring-2 ring-offset-2 ring-primary scale-110" : "opacity-80 scale-100"
+                )}
+              >
+                <item.icon className="w-4 h-4" />
+              </Link>
+            ))}
+          </div>
+          <button
+            onClick={() => navigate('/')}
+            className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </aside>
+        {/* Mobile Main Area */}
+        <div className="flex-1 ml-12 flex flex-col min-w-0">
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
+            <h2 className="text-sm font-bold truncate uppercase tracking-widest text-primary">
+              {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'GSM FLOW'}
+            </h2>
+            <div className="flex items-center gap-2">
+              <ThemeToggle className="static" />
+            </div>
+          </header>
+          <main className="flex-1 p-4 overflow-x-hidden">
+            <div className="space-y-6 animate-fade-in max-w-full">
+              {children}
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
   return (
-    <SidebarProvider
-      open={open}
-      onOpenChange={(newOpen) => setOpen(isMobile ? newOpen : true)}
-    >
-      <Sidebar
-        data-sidebar="sidebar"
-        collapsible="icon"
-        className="border-r border-border/50 bg-sidebar transition-all duration-300"
-      >
-        <SidebarHeader className="p-4 flex items-center justify-center lg:justify-start">
+    <SidebarProvider open={open} onOpenChange={setOpen}>
+      <Sidebar collapsible="icon" className="border-r border-border/50 bg-sidebar">
+        <SidebarHeader className="p-4">
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="min-w-8 w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground shadow-glow shrink-0">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight hidden lg:inline whitespace-nowrap">
+            <span className="font-bold text-lg tracking-tight group-data-[collapsible=icon]:hidden">
               GSM Flow
             </span>
           </div>
@@ -79,15 +123,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                   isActive={location.pathname === item.href}
                   tooltip={item.title}
                   className={cn(
-                    "h-12 sm:h-10 px-0 lg:px-4 transition-all flex justify-center lg:justify-start",
-                    location.pathname === item.href
-                      ? "bg-primary/10 text-primary lg:border-r-2 border-primary"
-                      : "hover:bg-accent hover:text-accent-foreground"
+                    "h-10 transition-all",
+                    location.pathname === item.href && "bg-primary/10 text-primary"
                   )}
                 >
                   <Link to={item.href}>
-                    <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
-                    <span className="hidden lg:inline">{item.title}</span>
+                    <item.icon className="w-5 h-5" />
+                    <span>{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -95,8 +137,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           </SidebarMenu>
           {isAdmin && (
             <div className="mt-8">
-              <div className="px-4 mb-2 hidden lg:block">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 whitespace-nowrap">System Admin</p>
+              <div className="px-4 mb-2 group-data-[collapsible=icon]:hidden">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">System Admin</p>
               </div>
               <SidebarMenu>
                 {adminItems.map((item) => (
@@ -106,15 +148,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       isActive={location.pathname === item.href}
                       tooltip={item.title}
                       className={cn(
-                        "h-12 sm:h-10 px-0 lg:px-4 transition-all flex justify-center lg:justify-start",
-                        location.pathname === item.href
-                          ? "bg-primary/10 text-primary lg:border-r-2 border-primary"
-                          : "hover:bg-accent hover:text-accent-foreground"
+                        "h-10 transition-all",
+                        location.pathname === item.href && "bg-primary/10 text-primary"
                       )}
                     >
                       <Link to={item.href}>
-                        <item.icon className="w-6 h-6 sm:w-5 sm:h-5" />
-                        <span className="hidden lg:inline">{item.title}</span>
+                        <item.icon className="w-5 h-5" />
+                        <span>{item.title}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -122,53 +162,27 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
             </div>
           )}
-          <div className="mt-auto pt-4">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="h-12 sm:h-10 px-0 lg:px-4 flex justify-center lg:justify-start" tooltip="API Documentation">
-                  <Link to="/docs">
-                    <BookOpen className="w-6 h-6 sm:w-5 sm:h-5" />
-                    <span className="hidden lg:inline">API Docs</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </div>
         </SidebarContent>
         <SidebarRail />
         <SidebarFooter className="p-4 border-t border-border/50">
-          <div className="flex items-center gap-3 mb-4 overflow-hidden hidden lg:flex">
-            <Avatar className="w-8 h-8 border border-border">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col overflow-hidden">
-              <span className="text-sm font-medium truncate">John Doe</span>
-              <span className="text-xs text-muted-foreground truncate">john@gsmflow.com</span>
-            </div>
-          </div>
           <Button
             variant="ghost"
-            className="w-full justify-center lg:justify-start text-muted-foreground hover:text-destructive h-10 sm:h-9 px-2"
+            className="w-full justify-start text-muted-foreground hover:text-destructive group-data-[collapsible=icon]:justify-center"
             onClick={() => navigate('/')}
           >
-            <LogOut className="w-5 h-5 sm:w-4 sm:h-4 lg:mr-2" />
-            <span className="hidden lg:inline">Logout</span>
+            <LogOut className="w-4 h-4 mr-2 group-data-[collapsible=icon]:mr-0" />
+            <span className="group-data-[collapsible=icon]:hidden">Logout</span>
           </Button>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="bg-muted/5 min-h-screen relative flex flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
-          <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider hidden lg:block truncate">
-              {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
-            </h2>
-          </div>
-          <div className="flex items-center gap-4">
-            <ThemeToggle className="static" />
-          </div>
+      <SidebarInset className="bg-muted/5 min-h-screen flex flex-col">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-8 backdrop-blur-md">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            {menuItems.find(i => i.href === location.pathname)?.title || adminItems.find(i => i.href === location.pathname)?.title || 'Dashboard'}
+          </h2>
+          <ThemeToggle className="static" />
         </header>
-        <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 w-full max-w-7xl mx-auto p-8">
           <div className="space-y-8 animate-fade-in">
             {children}
           </div>

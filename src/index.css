@@ -64,12 +64,8 @@
   body {
     @apply bg-background text-foreground antialiased overflow-x-hidden;
   }
-  html {
-    @apply overflow-x-hidden;
-  }
 }
 @layer components {
-
   .btn-gradient {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium transition-all duration-300 rounded-lg text-white shadow-primary hover:shadow-glow hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:pointer-events-none;
     background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
@@ -80,12 +76,22 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .bg-gradient-primary {
-    background: linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #155e75 100%);
+  /* Icon Gradients */
+  .icon-gradient-cyan { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+  .icon-gradient-purple { background: linear-gradient(135deg, #a855f7, #7e22ce); }
+  .icon-gradient-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .icon-gradient-rose { background: linear-gradient(135deg, #f43f5e, #be123c); }
+  .icon-gradient-indigo { background: linear-gradient(135deg, #6366f1, #4338ca); }
+  .icon-gradient-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+  .mobile-sidebar-shadow {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
   }
-  .bg-gradient-rainbow {
-    background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.15) 0%, transparent 70%);
-  }
+  .hover-glow-cyan:hover { box-shadow: 0 0 15px rgba(6, 182, 212, 0.5); }
+  .hover-glow-purple:hover { box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+  .hover-glow-amber:hover { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+  .hover-glow-rose:hover { box-shadow: 0 0 15px rgba(244, 63, 94, 0.5); }
+  .hover-glow-indigo:hover { box-shadow: 0 0 15px rgba(99, 102, 241, 0.5); }
+  .hover-glow-blue:hover { box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
   .glass {
     @apply bg-white/5 backdrop-blur-lg border border-white/10 shadow-glass;
   }

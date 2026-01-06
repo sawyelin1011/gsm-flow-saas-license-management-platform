@@ -48,51 +48,53 @@ export function ClientHome() {
   const usagePercentage = (currentTenants / tenantLimit) * 100;
   return (
     <div className="space-y-6 md:space-y-8 max-w-full overflow-hidden">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Node Status</h1>
-        <p className="text-sm md:text-base text-muted-foreground font-medium">Monitoring active installations for {profile?.name}</p>
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">System Status</h1>
+        <p className="text-xs md:text-base text-muted-foreground">Monitoring node health for {profile?.name}</p>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 2-Column Mobile Grid for Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         <StatCard
-          title="Active Tenants"
+          title="Nodes"
           value={currentTenants.toString()}
           icon={<Server className="w-4 h-4" />}
-          description={`Capacity: ${tenantLimit} nodes`}
+          description={`${tenantLimit} Limit`}
         />
         <StatCard
-          title="Validations"
-          value="4,281"
+          title="Calls"
+          value="4.2k"
           icon={<Activity className="w-4 h-4" />}
-          description="+12.5% vs prev"
+          description="+12% up"
         />
         <StatCard
-          title="Active Plan"
+          title="Plan"
           value={profile?.plan?.name ?? '...'}
           icon={<ShieldCheck className="w-4 h-4" />}
-          description="Next charge: Dec 01"
+          description="Active"
         />
         <StatCard
-          title="Monthly Spend"
-          value={`${profile?.plan?.price ?? 0}`}
+          title="MRR"
+          value={`$${profile?.plan?.price ?? 0}`}
           icon={<CreditCard className="w-4 h-4" />}
-          description="Standard recurring"
+          description="Standard"
         />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-        <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col min-h-[350px] sm:min-h-[400px]">
-          <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
-            <CardTitle className="text-lg">License Traffic</CardTitle>
-            <CardDescription>Network validation activity across all nodes</CardDescription>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col">
+          <CardHeader className="bg-muted/5 border-b border-border/50 p-4">
+            <CardTitle className="text-base">Traffic Flow</CardTitle>
+            <CardDescription className="text-xs">Validation activity</CardDescription>
           </CardHeader>
-          <CardContent className="flex-1 p-2 sm:p-6">
-            <div className="w-full aspect-[2.75]">
+          <CardContent className="flex-1 p-2 pt-6">
+            {/* Fixed aspect ratio to solve Recharts warning */}
+            <div className="w-full aspect-[4/3] sm:aspect-video min-h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={MOCK_CHART_DATA}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
                   <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }}
                   />
                   <Line
                     type="monotone"
@@ -107,43 +109,38 @@ export function ClientHome() {
             </div>
           </CardContent>
         </Card>
-        <Card className="border-border/50 shadow-sm flex flex-col justify-between">
-          <CardHeader className="bg-muted/5 border-b border-border/50 p-4 sm:p-6">
-            <CardTitle className="text-lg">Node Capacity</CardTitle>
-            <CardDescription>Subscription usage tracking</CardDescription>
+        <Card className="border-border/50 shadow-sm flex flex-col">
+          <CardHeader className="bg-muted/5 border-b border-border/50 p-4">
+            <CardTitle className="text-base">Capacity</CardTitle>
+            <CardDescription className="text-xs">Subscription usage</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 p-4 sm:p-6 flex-grow">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Nodes Allocated</span>
-                <span className="font-mono font-bold text-primary">{currentTenants} / {tenantLimit}</span>
+          <CardContent className="space-y-6 p-4 flex-grow">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <span>Allocated</span>
+                <span className="text-primary">{currentTenants} / {tenantLimit}</span>
               </div>
-              <div className="h-3 w-full bg-muted rounded-full overflow-hidden group cursor-help">
+              <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-cyan-500 to-primary transition-all duration-1000 group-hover:brightness-110"
+                  className="h-full bg-primary transition-all duration-1000"
                   style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                 />
               </div>
             </div>
-            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-sm">
-                  <TrendingUp className="w-5 h-5" />
-                </div>
-                <h4 className="font-bold text-sm tracking-tight">Growth Insight</h4>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-primary" />
+                <h4 className="font-bold text-xs">Insights</h4>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                You've utilized {usagePercentage.toFixed(0)}% of your capacity. Scale to maintain high availability and seamless node authorization.
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                Capacity is at {usagePercentage.toFixed(0)}%. Consider scaling to prevent service bottlenecks.
               </p>
-              <Button asChild variant="link" className="p-0 h-auto text-xs text-primary font-bold underline-offset-4">
-                <Link to="/dashboard/billing">Upgrade Path Analysis</Link>
-              </Button>
             </div>
           </CardContent>
-          <CardFooter className="p-4 sm:p-6 border-t border-border/50 bg-muted/5">
-            <Button asChild className="w-full btn-gradient shadow-glow font-bold h-11">
+          <CardFooter className="p-4 border-t border-border/50 bg-muted/5">
+            <Button asChild size="sm" className="w-full btn-gradient shadow-glow font-bold">
               <Link to="/dashboard/tenants">
-                Provision New Node <ArrowUpRight className="ml-2 w-4 h-4" />
+                New Node <ArrowUpRight className="ml-1 w-3 h-3" />
               </Link>
             </Button>
           </CardFooter>
@@ -154,14 +151,14 @@ export function ClientHome() {
 }
 function StatCard({ title, value, icon, description }: { title: string; value: string; icon: React.ReactNode; description: string }) {
   return (
-    <Card className="border-border/50 shadow-sm hover:border-primary/50 transition-colors group">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4">
-        <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">{title}</CardTitle>
-        <div className="text-muted-foreground group-hover:text-primary transition-colors">{icon}</div>
-      </CardHeader>
-      <CardContent className="p-4 pt-0">
-        <div className="text-2xl font-bold tracking-tight">{value}</div>
-        <p className="text-[10px] font-medium text-muted-foreground mt-1 truncate">{description}</p>
+    <Card className="border-border/50 shadow-sm hover:border-primary/50 transition-colors">
+      <CardContent className="p-3 sm:p-4 flex flex-col gap-1">
+        <div className="flex items-center justify-between text-muted-foreground">
+          <span className="text-[9px] font-black uppercase tracking-widest">{title}</span>
+          {icon}
+        </div>
+        <div className="text-lg sm:text-2xl font-bold tracking-tight">{value}</div>
+        <p className="text-[8px] font-medium text-muted-foreground truncate">{description}</p>
       </CardContent>
     </Card>
   );
