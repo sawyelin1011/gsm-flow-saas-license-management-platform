@@ -8,6 +8,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css';
@@ -15,11 +16,12 @@ import '@/index.css';
 import { LandingPage } from '@/pages/LandingPage';
 import { Auth } from '@/pages/Auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { ClientHome } from '@/pages/dashboard/ClientHome';
-import { Tenants } from '@/pages/dashboard/Tenants';
+import { DashboardHome } from '@/pages/dashboard/DashboardHome';
+import { DataGrid } from '@/pages/dashboard/DataGrid';
 import { Billing } from '@/pages/dashboard/Billing';
 import { Settings } from '@/pages/dashboard/Settings';
 import { Support } from '@/pages/dashboard/Support';
+import { ApiTest } from '@/pages/dashboard/ApiTest';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { UserManagement } from '@/pages/admin/UserManagement';
 import { ApiDocs } from '@/pages/docs/ApiDocs';
@@ -31,7 +33,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes default stale time
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -62,11 +64,11 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <ClientHome />,
+        element: <DashboardHome />,
       },
       {
-        path: "tenants",
-        element: <Tenants />,
+        path: "data",
+        element: <DataGrid />,
       },
       {
         path: "billing",
@@ -75,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "support",
         element: <Support />,
+      },
+      {
+        path: "api-test",
+        element: <ApiTest />,
       },
       {
         path: "settings",
@@ -94,10 +100,12 @@ const router = createBrowserRouter([
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
-        <RouterProvider router={router} />
-        <Toaster richColors closeButton position="top-right" />
-      </ErrorBoundary>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ErrorBoundary>
+          <RouterProvider router={router} />
+          <Toaster richColors closeButton position="top-right" />
+        </ErrorBoundary>
+      </ThemeProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

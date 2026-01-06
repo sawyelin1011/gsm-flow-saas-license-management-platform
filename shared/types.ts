@@ -3,45 +3,50 @@ export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
 }
-export interface User {
+export interface AppUser {
   id: string;
   name: string;
   email: string;
   planId: string;
 }
-export interface UserProfile extends User {
+export interface UserProfile extends AppUser {
   plan: Plan;
-  tenantCount: number;
+  itemCount: number;
 }
 export interface Plan {
   id: string;
   name: string;
   price: number;
   interval: 'month' | 'year';
-  tenantLimit: number;
+  itemLimit: number;
   features: string[];
 }
-export type TenantStatus = 'active' | 'suspended' | 'expired';
-export interface Tenant {
+export type ItemStatus = 'active' | 'pending' | 'archived';
+export interface Item {
   id: string;
-  name: string;
-  domain: string;
-  licenseKey: string;
-  status: TenantStatus;
+  title: string;
+  description: string;
+  status: ItemStatus;
+  category: string;
   ownerId: string;
   createdAt: number;
+  metadata?: Record<string, any>;
 }
-export interface LicenseValidation {
-  valid: boolean;
-  tenant?: {
-    name: string;
-    domain: string;
-    status: TenantStatus;
-  };
-  message?: string;
+export interface SystemStats {
+  userCount: number;
+  itemCount: number;
+  revenue: number;
+  health: string;
+}
+export interface ApiTestResponse {
+  message: string;
+  timestamp: string;
+  method: string;
+  headers: Record<string, string>;
+  echo: any;
 }
 export type SupportTicketStatus = 'open' | 'closed';
-export type SupportTicketCategory = 'technical' | 'billing' | 'account';
+export type SupportTicketCategory = 'technical' | 'billing' | 'account' | 'general';
 export interface SupportTicket {
   id: string;
   userId: string;
@@ -63,20 +68,8 @@ export interface Invoice {
 }
 export interface UserDataExport {
   profile: UserProfile;
-  tenants: Tenant[];
+  items: Item[];
   tickets: SupportTicket[];
   invoices: Invoice[];
   exportedAt: number;
-}
-// Keep legacy for template compatibility if needed elsewhere
-export interface Chat {
-  id: string;
-  title: string;
-}
-export interface ChatMessage {
-  id: string;
-  chatId: string;
-  userId: string;
-  text: string;
-  ts: number;
 }

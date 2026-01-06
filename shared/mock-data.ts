@@ -1,46 +1,55 @@
-import type { User, Plan, Tenant } from './types';
+import type { AppUser, Plan, Item } from './types';
 export const MOCK_PLANS: Plan[] = [
   {
-    id: 'starter',
-    name: 'Starter',
-    price: 49,
+    id: 'basic',
+    name: 'Basic Tier',
+    price: 29,
     interval: 'month',
-    tenantLimit: 2,
-    features: ['2 GSM Installations', 'Standard Support', 'Daily Backups']
+    itemLimit: 5,
+    features: ['5 Project Items', 'Community Support', 'Basic Analytics']
   },
   {
-    id: 'professional',
-    name: 'Professional',
-    price: 149,
+    id: 'pro',
+    name: 'Pro Tier',
+    price: 89,
     interval: 'month',
-    tenantLimit: 10,
-    features: ['10 GSM Installations', 'Priority Support', 'Real-time Monitoring', 'API Access']
+    itemLimit: 25,
+    features: ['25 Project Items', 'Priority Email Support', 'Advanced Exports', 'API Access']
   },
   {
     id: 'enterprise',
-    name: 'Enterprise',
-    price: 499,
+    name: 'Enterprise Tier',
+    price: 299,
     interval: 'month',
-    tenantLimit: 100,
-    features: ['Unlimited Installations', 'Dedicated Support', 'Custom Domain Branding', 'SLA Guarantee']
+    itemLimit: 1000,
+    features: ['Unlimited Items', '24/7 Dedicated Support', 'Custom Integrations', 'SLA Guarantee']
   }
 ];
-export const MOCK_USERS: User[] = [
+export const MOCK_USERS: AppUser[] = [
   {
     id: 'admin-demo',
-    name: 'John Doe',
-    email: 'john@gsmflow.com',
-    planId: 'professional'
+    name: 'Demo Admin',
+    email: 'admin@boilerplate.local',
+    planId: 'pro'
   }
 ];
-export const MOCK_TENANTS: Tenant[] = [
+export const MOCK_ITEMS: Item[] = [
   {
-    id: 't1',
-    name: 'Main Hub',
-    domain: 'hub.gsmflow.local',
-    licenseKey: 'GSM-XXXX-YYYY-ZZZZ',
+    id: 'item-1',
+    title: 'Prototype Delta',
+    description: 'Initial architectural framework for the project.',
     status: 'active',
+    category: 'Development',
     ownerId: 'admin-demo',
-    createdAt: Date.now() - 86400000 * 5
+    createdAt: Date.now() - 86400000 * 3
+  },
+  {
+    id: 'item-2',
+    title: 'Marketing Assets',
+    description: 'Banners, icons, and landing page wireframes.',
+    status: 'pending',
+    category: 'Design',
+    ownerId: 'admin-demo',
+    createdAt: Date.now() - 86400000 * 1
   }
 ];

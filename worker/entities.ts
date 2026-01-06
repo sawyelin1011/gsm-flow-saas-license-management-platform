@@ -1,57 +1,45 @@
 import { IndexedEntity } from "./core-utils";
-import type { User, Tenant, UserProfile, Plan, SupportTicket, Invoice } from "@shared/types";
-import { MOCK_USERS, MOCK_TENANTS, MOCK_PLANS } from "@shared/mock-data";
-export class UserEntity extends IndexedEntity<User> {
+import type { AppUser, Item, UserProfile, SupportTicket, Invoice } from "@shared/types";
+import { MOCK_USERS, MOCK_ITEMS, MOCK_PLANS } from "@shared/mock-data";
+export class UserEntity extends IndexedEntity<AppUser> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: User = { id: "", name: "", email: "", planId: "starter" };
+  static readonly initialState: AppUser = { id: "", name: "", email: "", planId: "basic" };
   static seedData = MOCK_USERS;
   async getProfile(env: any): Promise<UserProfile> {
     const state = await this.getState();
     const plan = MOCK_PLANS.find(p => p.id === state.planId) || MOCK_PLANS[0];
-    const tenants = await TenantEntity.list(env);
-    const userTenants = tenants.items.filter(t => t.ownerId === this.id);
+    const items = await ItemEntity.list(env);
+    const userItems = items.items.filter(it => it.ownerId === this.id);
     return {
       ...state,
       plan,
-      tenantCount: userTenants.length
+      itemCount: userItems.length
     };
   }
 }
-export class TenantEntity extends IndexedEntity<Tenant> {
-  static readonly entityName = "tenant";
-  static readonly indexName = "tenants";
-  static readonly initialState: Tenant = {
+export class ItemEntity extends IndexedEntity<Item> {
+  static readonly entityName = "item";
+  static readonly indexName = "items";
+  static readonly initialState: Item = {
     id: "",
-    name: "",
-    domain: "",
-    licenseKey: "",
+    title: "",
+    description: "",
     status: "active",
+    category: "general",
     ownerId: "",
     createdAt: 0
   };
-  static seedData = MOCK_TENANTS;
-  static async createForUser(env: any, data: { name: string; domain: string; ownerId: string }): Promise<Tenant> {
+  static seedData = MOCK_ITEMS;
+  static async createForItem(env: any, data: { title: string; description: string; category: string; ownerId: string }): Promise<Item> {
     const id = crypto.randomUUID();
-    const licenseKey = `GF-${crypto.randomUUID().split('-')[0].toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const tenant: Tenant = {
+    const item: Item = {
       ...data,
       id,
-      licenseKey,
       status: 'active',
       createdAt: Date.now()
     };
-    return await this.create(env, tenant);
-  }
-  async validate(domain: string): Promise<boolean> {
-    const state = await this.getState();
-    return state.status === 'active' && state.domain === domain;
-  }
-  async toggleStatus(): Promise<Tenant> {
-    return await this.mutate((s) => ({
-      ...s,
-      status: s.status === 'active' ? 'suspended' : 'active'
-    }));
+    return await this.create(env, item);
   }
 }
 export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
@@ -63,7 +51,7 @@ export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
     subject: "",
     message: "",
     status: "open",
-    category: "technical",
+    category: "general",
     createdAt: 0
   };
   static async getTicketsByUser(env: any, userId: string): Promise<SupportTicket[]> {

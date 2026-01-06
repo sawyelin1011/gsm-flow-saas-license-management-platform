@@ -1,170 +1,132 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  Activity,
-  Server,
+import { 
+  Activity, 
+  Layers, 
+  Users, 
   Zap,
-  ShieldCheck,
-  ArrowRight,
-  Plus,
-  Target,
-  RefreshCcw
+  ArrowUpRight,
+  MousePointer2,
+  TrendingUp
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
 } from 'recharts';
 import { api } from '@/lib/api-client';
 import type { UserProfile } from '@shared/types';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 const CHART_DATA = [
-  { name: '00:00', validations: 240 },
-  { name: '04:00', validations: 580 },
-  { name: '08:00', validations: 920 },
-  { name: '12:00', validations: 1400 },
-  { name: '16:00', validations: 1100 },
-  { name: '20:00', validations: 1800 },
-  { name: '23:59', validations: 2100 },
+  { name: 'Mon', usage: 4000 },
+  { name: 'Tue', usage: 3000 },
+  { name: 'Wed', usage: 2000 },
+  { name: 'Thu', usage: 2780 },
+  { name: 'Fri', usage: 1890 },
+  { name: 'Sat', usage: 2390 },
+  { name: 'Sun', usage: 3490 },
 ];
 export function DashboardHome() {
   const { data: profile, isLoading } = useQuery<UserProfile>({
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
-  const capacityPercentage = profile ? Math.min(100, ((profile.tenantCount || 0) / (profile.plan.tenantLimit || 1)) * 100) : 0;
-  const isNearLimit = capacityPercentage >= 80;
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
-      <div className="space-y-8 animate-fade-in">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center sm:text-left">
-            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Authority Console</h1>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-tight opacity-70">GSM Unlocking Oversight</p>
-          </div>
-          <Button className="btn-gradient font-black h-11 text-[10px] uppercase tracking-widest px-8 shadow-glow w-full sm:w-auto" asChild>
-            <Link to="/dashboard/data">
-              <Plus className="w-4 h-4 mr-2" /> Provision Platform
-            </Link>
-          </Button>
-        </div>
-        {/* Responsive Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Platform Nodes" value={profile?.tenantCount?.toString() || "0"} icon={<Server className="w-4 h-4" />} trend="STABLE" />
-          <StatCard title="Service Traffic" value="24.8k" icon={<Zap className="w-4 h-4" />} trend="+18% (24H)" />
-          <StatCard title="Validation" value="19ms" icon={<Activity className="w-4 h-4" />} trend="LOW LATENCY" />
-          <StatCard title="System Health" value="100%" icon={<ShieldCheck className="w-4 h-4" />} trend="NOMINAL" />
-        </div>
-        {/* Chart & Capacity Sections */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="xl:col-span-2 border-border/50 shadow-soft hover:border-primary/20 transition-colors">
-            <CardHeader className="border-b bg-muted/5 py-4 px-6 flex flex-row items-center justify-between">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                <Target className="w-3.5 h-3.5 text-primary animate-pulse" /> Validation Pulse
-              </CardTitle>
-              <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/20 bg-primary/5">Active Stream</Badge>
-            </CardHeader>
-            <CardContent className="pt-8 px-6">
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={CHART_DATA}>
-                    <defs>
-                      <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.15}/>
-                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
-                    <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} axisLine={false} tickLine={false} />
-                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))', fontSize: '10px', fontWeight: 'bold' }} />
-                    <Area type="monotone" dataKey="validations" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorVal)" strokeWidth={3} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-border/50 flex flex-col h-full bg-card shadow-soft overflow-hidden hover:border-primary/20 transition-colors">
-            <CardHeader className="border-b bg-muted/5 py-4 px-6 flex items-center justify-between">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Authority Capacity</CardTitle>
-              <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase">
-                <RefreshCcw className="w-3 h-3 animate-spin-slow" />
-                <span>Sync Active</span>
-              </div>
-            </CardHeader>
-            <CardContent className="p-8 space-y-8 flex-1 flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Nodes</p>
-                    <div className="text-4xl font-black tracking-tighter">
-                      {isLoading ? <Skeleton className="h-8 w-12 inline-block" /> : profile?.tenantCount}
-                      <span className="text-muted-foreground text-sm font-medium ml-1">/ {profile?.plan.tenantLimit || 1}</span>
-                    </div>
-                  </div>
-                  <Badge className="bg-primary/10 text-primary text-[9px] uppercase font-black mb-1 border-none py-1 px-3">
-                    {profile?.plan.name || "Launch"}
+    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-black tracking-tight">System Console</h1>
+        <p className="text-muted-foreground font-medium">Platform overview and resource telemetry.</p>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <StatCard title="Total Resources" value={profile?.itemCount?.toString() || "0"} icon={<Layers className="w-4 h-4 text-primary" />} trend="+12%" />
+        <StatCard title="Active Users" value="1,248" icon={<Users className="w-4 h-4 text-primary" />} trend="+4.5%" />
+        <StatCard title="API Requests" value="48.2k" icon={<Zap className="w-4 h-4 text-primary" />} trend="+24%" />
+        <StatCard title="Avg Latency" value="22ms" icon={<Activity className="w-4 h-4 text-primary" />} trend="-3ms" />
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <Card className="xl:col-span-2 glass overflow-hidden">
+          <CardHeader className="border-b bg-muted/5">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-primary" /> Resource Utilization
+            </CardTitle>
+            <CardDescription className="text-xs">Cumulative system usage metrics over the last 7 days.</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={CHART_DATA}>
+                  <defs>
+                    <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--muted))" />
+                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))' }} />
+                  <Area type="monotone" dataKey="usage" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorUsage)" strokeWidth={3} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="glass flex flex-col">
+          <CardHeader className="border-b bg-muted/5">
+            <CardTitle className="text-base flex items-center gap-2">
+              <MousePointer2 className="w-4 h-4 text-primary" /> Active Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col justify-center gap-6 p-6">
+            {isLoading ? (
+              <Skeleton className="h-20 w-full" />
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-primary/20 text-primary">
+                    {profile?.plan?.name}
                   </Badge>
+                  <div className="text-4xl font-black tracking-tighter">${profile?.plan?.price}<span className="text-xs text-muted-foreground ml-1">/mo</span></div>
                 </div>
-                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden border border-border/50 relative">
-                  <div
-                    className={cn(
-                      "h-full bg-primary transition-all duration-1000 ease-out",
-                      isNearLimit && "animate-pulse shadow-[0_0_12px_rgba(6,182,212,0.5)]"
-                    )}
-                    style={{ width: `${capacityPercentage}%` }}
-                  />
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-bold uppercase tracking-widest">
+                    <span>Quota Usage</span>
+                    <span className="text-primary">{profile?.itemCount} / {profile?.plan?.itemLimit}</span>
+                  </div>
+                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary shadow-glow transition-all duration-500" 
+                      style={{ width: `${((profile?.itemCount || 0) / (profile?.plan?.itemLimit || 1)) * 100}%` }} 
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Registry Health</h4>
-                <div className="space-y-3">
-                  {profile?.tenantCount && profile.tenantCount > 0 ? (
-                    Array.from({ length: Math.min(3, profile.tenantCount) }).map((_, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs font-bold text-foreground group">
-                        <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span className="flex-1 truncate uppercase tracking-tighter group-hover:text-primary transition-colors font-mono">NODE_0{i + 1}</span>
-                        <Badge variant="outline" className="text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5 px-1.5 h-4">ONLINE</Badge>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="py-8 text-center text-[10px] font-bold text-muted-foreground uppercase italic tracking-widest opacity-30 border border-dashed rounded-xl">
-                      Registry Empty
-                    </div>
-                  )}
-                </div>
-              </div>
-              <Button className="w-full btn-gradient h-12 font-black text-[10px] uppercase tracking-widest mt-4 shadow-glow" asChild>
-                <Link to="/dashboard/data">Manage Registry <ArrowRight className="ml-2 w-4 h-4" /></Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+                <Button className="w-full btn-gradient font-bold h-11">
+                  Upgrade Capacity <ArrowUpRight className="ml-2 w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
 function StatCard({ title, value, icon, trend }: { title: string; value: string; icon: React.ReactNode; trend: string }) {
   return (
-    <Card className="border-border/50 p-5 group hover:border-primary/40 transition-all hover:bg-primary/[0.01] cursor-default shadow-soft hover:-translate-y-1 duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2.5 rounded-xl bg-muted text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all duration-300">
-          {icon}
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">{trend}</span>
+    <Card className="glass p-4 group hover:border-primary/50 transition-all">
+      <div className="flex items-center justify-between mb-3">
+        <div className="p-2 rounded-lg bg-primary/5 text-primary group-hover:scale-110 transition-transform">{icon}</div>
+        <span className={cn("text-[10px] font-black", trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500')}>{trend}</span>
       </div>
       <div className="space-y-0.5">
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">{title}</p>
-        <p className="text-3xl font-black tracking-tighter text-foreground">{value}</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">{title}</p>
+        <p className="text-2xl font-black tracking-tight">{value}</p>
       </div>
     </Card>
   );
