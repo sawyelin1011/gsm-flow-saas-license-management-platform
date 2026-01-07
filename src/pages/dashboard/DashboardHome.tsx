@@ -90,10 +90,10 @@ export function DashboardHome() {
               <div className="flex justify-between items-end">
                 <div className="space-y-0.5">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Authorized Tenants</p>
-                  <p className="text-3xl font-black tracking-tighter">
+                  <div className="text-3xl font-black tracking-tighter">
                     {isLoading ? <Skeleton className="h-8 w-12 inline-block" /> : profile?.tenantCount}
                     <span className="text-muted-foreground text-sm font-medium ml-1">/ {profile?.plan.tenantLimit || 1}</span>
-                  </p>
+                  </div>
                 </div>
                 <Badge className="bg-primary/10 text-primary text-[9px] uppercase font-black mb-1 border-none">
                   {profile?.plan.name || "Launch"}
