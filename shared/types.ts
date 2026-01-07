@@ -11,39 +11,49 @@ export interface AppUser {
 }
 export interface UserProfile extends AppUser {
   plan: Plan;
-  itemCount: number;
+  tenantCount: number;
 }
 export interface Plan {
   id: string;
   name: string;
   price: number;
   interval: 'month' | 'year';
-  itemLimit: number;
+  tenantLimit: number;
   features: string[];
 }
-export type ItemStatus = 'active' | 'pending' | 'archived';
-export interface Item {
+export type TenantStatus = 'active' | 'revoked' | 'suspended';
+export interface License {
+  key: string;
+  issuedAt: number;
+  signature: string;
+}
+export interface Tenant {
   id: string;
-  title: string;
-  description: string;
-  status: ItemStatus;
-  category: string;
+  name: string;
+  domain: string;
+  status: TenantStatus;
+  license: License;
   ownerId: string;
   createdAt: number;
-  metadata?: Record<string, any>;
+  lastValidated?: number;
 }
 export interface SystemStats {
-  userCount: number;
-  itemCount: number;
+  operatorCount: number;
+  tenantCount: number;
   revenue: number;
   health: string;
 }
-export interface ApiTestResponse {
-  message: string;
-  timestamp: string;
-  method: string;
-  headers: Record<string, string>;
-  echo: any;
+export interface LicenseValidationResponse {
+  valid: boolean;
+  reason?: string;
+  details?: {
+    id: string;
+    name: string;
+    status: string;
+    authorizedAt: number;
+    domain: string;
+  };
+  timestamp: number;
 }
 export type SupportTicketStatus = 'open' | 'closed';
 export type SupportTicketCategory = 'technical' | 'billing' | 'account' | 'general';
@@ -65,11 +75,4 @@ export interface Invoice {
   status: InvoiceStatus;
   planName: string;
   currency: string;
-}
-export interface UserDataExport {
-  profile: UserProfile;
-  items: Item[];
-  tickets: SupportTicket[];
-  invoices: Invoice[];
-  exportedAt: number;
 }

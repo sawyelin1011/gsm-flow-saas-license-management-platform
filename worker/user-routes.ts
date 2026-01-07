@@ -1,237 +1,92 @@
 import { Hono } from "hono";
 import type { Env } from './core-utils';
-import { UserEntity, ItemEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
+import { UserEntity, TenantEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
 const MOCK_PLANS = [
-  {id: 'basic', name: 'Basic', price: 0},
-  {id: 'pro', name: 'Pro', price: 29},
-  {id: 'enterprise', name: 'Enterprise', price: 99}
+  {id: 'basic', name: 'Node Starter', price: 29, tenantLimit: 1},
+  {id: 'pro', name: 'Cluster Pro', price: 89, tenantLimit: 10},
+  {id: 'enterprise', name: 'Carrier Enterprise', price: 299, tenantLimit: 100}
 ];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   const userId = 'admin-demo';
-  // HEALTH CHECK (TestBench vitals ping)
-  app.get('/api/health', (c) => ok(c, { status: 'healthy', timestamp: Date.now(), message: 'Worker API operational' }));
-  
-  // ROOT / API DISCOVERY
-  app.get('/api', (c) => ok(c, { message: "SaaS Engine API v2.0", status: "online" }));
-  // PUBLIC LICENSE VALIDATION (Required for API Docs / Playground)
+  app.get('/api/health', (c) => ok(c, { status: 'healthy', timestamp: Date.now(), message: 'GSM Flow API operational' }));
   app.post('/api/validate-license', async (c) => {
     try {
       const { key, domain } = await c.req.json();
-      if (!key || !domain) return bad(c, 'Key and domain are required');
-      // In this multipurpose logic, "key" maps to Item ID and "domain" maps to Category
-      const itemInst = new ItemEntity(c.env, key);
-      if (!await itemInst.exists()) {
-        return ok(c, { 
-          valid: false, 
-          reason: 'License key not found in registry',
-          timestamp: Date.now() 
-        });
+      if (!key || !domain) return bad(c, 'License key and domain target are required');
+      const tenantsPage = await TenantEntity.list(c.env);
+      const tenant = tenantsPage.items.find(t => t.license.key === key);
+      if (!tenant) {
+        return ok(c, { valid: false, reason: 'License key not found in registry', timestamp: Date.now() });
       }
-      const state = await itemInst.getState();
-      if (!state?.category) {
-        return ok(c, {
-          valid: false,
-          reason: 'License state corrupted or missing domain binding',
-          timestamp: Date.now()
-        });
+      if (tenant.status !== 'active') {
+        return ok(c, { valid: false, reason: `License status is ${tenant.status}`, timestamp: Date.now() });
       }
-      const isDomainMatch = state.category.toLowerCase() === domain.toLowerCase();
-      if (!isDomainMatch) {
-        return ok(c, { 
-          valid: false, 
-          reason: 'Domain mismatch: Node not authorized for this target',
-          timestamp: Date.now() 
-        });
+      const normalizedTarget = domain.toLowerCase().trim();
+      const normalizedBound = tenant.domain.toLowerCase().trim();
+      if (normalizedTarget !== normalizedBound) {
+        return ok(c, { valid: false, reason: 'Domain mismatch: Node not authorized for this target', timestamp: Date.now() });
       }
       return ok(c, {
         valid: true,
         details: {
-          id: state.id || 'unknown',
-          name: state.title || 'Unnamed License',
-          status: state.status || 'active',
-          authorizedAt: state.createdAt || 0
+          id: tenant.id,
+          name: tenant.name,
+          status: tenant.status,
+          authorizedAt: tenant.createdAt,
+          domain: tenant.domain
         },
         timestamp: Date.now()
       });
     } catch (e) {
-      return bad(c, 'Validation authority internal error');
+      return bad(c, 'Authority node internal error');
     }
   });
-  // PROFILE
   app.get('/api/me', async (c) => {
-    try {
-      const user = new UserEntity(c.env, userId);
-      if (!await user.exists()) {
-        await UserEntity.ensureSeed(c.env);
-      }
-      return ok(c, await user.getProfile(c.env));
-    } catch (e) {
-      return bad(c, 'Failed to retrieve profile');
-    }
+    const user = new UserEntity(c.env, userId);
+    if (!await user.exists()) await UserEntity.ensureSeed(c.env);
+    return ok(c, await user.getProfile(c.env));
   });
-  // ITEMS CRUD
-  app.get('/api/items', async (c) => {
-    try {
-      await ItemEntity.ensureSeed(c.env);
-      const page = await ItemEntity.list(c.env);
-      const userItems = (page.items || []).filter(i => i.ownerId === userId);
-      return ok(c, { items: userItems, next: page.next });
-    } catch (e) {
-      return bad(c, 'Failed to fetch items');
-    }
+  app.get('/api/tenants', async (c) => {
+    const page = await TenantEntity.list(c.env);
+    const userTenants = (page.items || []).filter(t => t.ownerId === userId);
+    return ok(c, { items: userTenants, next: page.next });
   });
-  app.post('/api/items', async (c) => {
+  app.post('/api/tenants', async (c) => {
     try {
-      const { title, description, category } = await c.req.json();
-      if (!title || title.length < 2) return bad(c, 'Title too short');
-      const item = await ItemEntity.createForItem(c.env, {
-        title,
-        description: description || '',
-        category: category || 'General',
-        ownerId: userId
-      });
-      return ok(c, item);
-    } catch (e) {
-      return bad(c, 'Failed to create item');
-    }
-  });
-  app.delete('/api/items/:id', async (c) => {
-    try {
-      const id = c.req.param('id');
-      const deleted = await ItemEntity.delete(c.env, id);
-      return ok(c, { id, deleted });
-    } catch (e) {
-      return bad(c, 'Delete operation failed');
-    }
-  });
-  // BILLING
-  app.post('/api/billing/upgrade', async (c) => {
-    try {
-      const { planId } = await c.req.json();
-      const plan = MOCK_PLANS.find(p => p.id === planId);
-      if (!plan) return bad(c, 'Invalid plan identifier');
-      const user = new UserEntity(c.env, userId);
-      await user.mutate(s => ({ ...s, planId }));
-      await InvoiceEntity.create(c.env, {
-        id: crypto.randomUUID(),
-        userId,
-        amount: plan.price,
-        date: Date.now(),
-        status: 'paid',
-        planName: plan.name,
-        currency: 'USD'
-      });
-      return ok(c, await user.getProfile(c.env));
-    } catch (e) {
-      return bad(c, 'Billing operation failed');
-    }
-  });
-  app.get('/api/billing/invoices', async (c) => {
-    try {
-      const invs = await InvoiceEntity.getInvoicesByUser(c.env, userId);
-      return ok(c, invs);
-    } catch (e) {
-      return bad(c, 'Failed to fetch invoices');
-    }
-  });
-  // SUPPORT
-  app.get('/api/support', async (c) => {
-    try {
-      const tix = await SupportTicketEntity.getTicketsByUser(c.env, userId);
-      return ok(c, tix);
-    } catch (e) {
-      return bad(c, 'Failed to fetch tickets');
-    }
-  });
-  app.post('/api/support', async (c) => {
-    try {
-      const { subject, message, category } = await c.req.json();
-      const ticket = await SupportTicketEntity.create(c.env, {
-        id: crypto.randomUUID(),
-        userId,
-        subject,
-        message,
-        category: category || 'general',
-        status: 'open',
-        createdAt: Date.now()
-      });
-      return ok(c, ticket);
-    } catch (e) {
-      return bad(c, 'Failed to log ticket');
-    }
-  });
-  // ADMIN ENDPOINTS
-  app.get('/api/admin/stats', async (c) => {
-    try {
-      const users = await UserEntity.list(c.env);
-      const items = await ItemEntity.list(c.env);
-      const invoices = await InvoiceEntity.list(c.env);
-      const rev = (invoices.items || []).reduce((acc, inv) => acc + inv.amount, 0);
-      return ok(c, {
-        userCount: (users.items || []).length,
-        itemCount: (items.items || []).length,
-        revenue: rev,
-        health: 'Operational'
-      });
-    } catch (e) {
-      return bad(c, 'Admin stats failed');
-    }
-  });
-  app.get('/api/admin/users', async (c) => {
-    try {
-      const users = await UserEntity.list(c.env);
-      return ok(c, users.items || []);
-    } catch (e) {
-      return bad(c, 'Failed to fetch operator registry');
-    }
-  });
-  app.post('/api/admin/users/:id/plan', async (c) => {
-    try {
-      const id = c.req.param('id');
-      const { planId } = await c.req.json();
-      const user = new UserEntity(c.env, id);
-      if (!await user.exists()) return notFound(c, 'User not found');
-      await user.patch({ planId });
-      return ok(c, { success: true });
-    } catch (e) {
-      return bad(c, 'Authority elevation failed');
-    }
-  });
-  app.get('/api/admin/tenants', async (c) => {
-    try {
-      const items = await ItemEntity.list(c.env);
-      const tenants = (items.items || []).map(it => ({
-        id: it.id,
-        name: it.title || 'Unnamed',
-        domain: (it.category || '').toLowerCase().includes('.') ? it.category : `${it.id.slice(0, 4)}.node.local`,
-        status: it.status || 'unknown',
-        ownerId: it.ownerId,
-        createdAt: it.createdAt
-      }));
-      return ok(c, { items: tenants, next: items.next });
-    } catch (e) {
-      return bad(c, 'Failed to fetch cluster nodes');
-    }
-  });
-  // TESTER / UTILS
-  app.post('/api/test', async (c) => {
-    const body = await c.req.json().catch(() => ({}));
-    return ok(c, {
-      message: "Worker endpoint active",
-      timestamp: new Date().toISOString(),
-      echo: body
-    });
-  });
-  app.get('/api/export', async (c) => {
-    try {
+      const { name, domain } = await c.req.json();
+      if (!name || name.length < 2) return bad(c, 'Name too short');
+      if (!domain || !domain.includes('.')) return bad(c, 'Invalid domain format');
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
-      const itemsPage = await ItemEntity.list(c.env);
-      const items = (itemsPage.items || []).filter(i => i.ownerId === userId);
-      return ok(c, { profile, items, exportedAt: Date.now() });
+      if (profile.tenantCount >= profile.plan.tenantLimit) {
+        return bad(c, 'Tenant limit reached for current plan');
+      }
+      const tenant = await TenantEntity.createForUser(c.env, { name, domain, ownerId: userId });
+      return ok(c, tenant);
     } catch (e) {
-      return bad(c, 'Export failed');
+      return bad(c, 'Failed to provision tenant');
     }
+  });
+  app.delete('/api/tenants/:id', async (c) => {
+    const id = c.req.param('id');
+    const deleted = await TenantEntity.delete(c.env, id);
+    return ok(c, { id, deleted });
+  });
+  app.get('/api/admin/stats', async (c) => {
+    const users = await UserEntity.list(c.env);
+    const tenants = await TenantEntity.list(c.env);
+    const invoices = await InvoiceEntity.list(c.env);
+    const rev = (invoices.items || []).reduce((acc, inv) => acc + inv.amount, 0);
+    return ok(c, {
+      operatorCount: users.items.length,
+      tenantCount: tenants.items.length,
+      revenue: rev,
+      health: 'Operational'
+    });
+  });
+  app.get('/api/admin/tenants', async (c) => {
+    const tenants = await TenantEntity.list(c.env);
+    return ok(c, tenants);
   });
 }

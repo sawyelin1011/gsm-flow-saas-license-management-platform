@@ -1,6 +1,6 @@
 import { IndexedEntity } from "./core-utils";
-import type { AppUser, Item, UserProfile, SupportTicket, Invoice } from "@shared/types";
-import { MOCK_USERS, MOCK_ITEMS, MOCK_PLANS } from "@shared/mock-data";
+import type { AppUser, Tenant, UserProfile, SupportTicket, Invoice } from "@shared/types";
+import { MOCK_USERS, MOCK_PLANS } from "@shared/mock-data";
 export class UserEntity extends IndexedEntity<AppUser> {
   static readonly entityName = "user";
   static readonly indexName = "users";
@@ -9,37 +9,51 @@ export class UserEntity extends IndexedEntity<AppUser> {
   async getProfile(env: any): Promise<UserProfile> {
     const state = await this.getState();
     const plan = MOCK_PLANS.find(p => p.id === state.planId) || MOCK_PLANS[0];
-    const items = await ItemEntity.list(env);
-    const userItems = items.items.filter(it => it.ownerId === this.id);
+    const tenants = await TenantEntity.list(env);
+    const userTenants = tenants.items.filter(t => t.ownerId === this.id);
     return {
       ...state,
-      plan,
-      itemCount: userItems.length
+      plan: {
+        ...plan,
+        tenantLimit: (plan as any).itemLimit || 5 // Fallback for transition
+      },
+      tenantCount: userTenants.length
     };
   }
 }
-export class ItemEntity extends IndexedEntity<Item> {
-  static readonly entityName = "item";
-  static readonly indexName = "items";
-  static readonly initialState: Item = {
+export class TenantEntity extends IndexedEntity<Tenant> {
+  static readonly entityName = "tenant";
+  static readonly indexName = "tenants";
+  static readonly initialState: Tenant = {
     id: "",
-    title: "",
-    description: "",
+    name: "",
+    domain: "",
     status: "active",
-    category: "general",
+    license: { key: "", issuedAt: 0, signature: "" },
     ownerId: "",
     createdAt: 0
   };
-  static seedData = MOCK_ITEMS;
-  static async createForItem(env: any, data: { title: string; description: string; category: string; ownerId: string }): Promise<Item> {
+  static generateLicenseKey(): string {
+    const segments = Array.from({ length: 3 }, () => 
+      Math.random().toString(36).substring(2, 6).toUpperCase()
+    );
+    return `FLOW-${segments.join('-')}`;
+  }
+  static async createForUser(env: any, data: { name: string; domain: string; ownerId: string }): Promise<Tenant> {
     const id = crypto.randomUUID();
-    const item: Item = {
+    const key = this.generateLicenseKey();
+    const tenant: Tenant = {
       ...data,
       id,
       status: 'active',
+      license: {
+        key,
+        issuedAt: Date.now(),
+        signature: btoa(id + key).substring(0, 16)
+      },
       createdAt: Date.now()
     };
-    return await this.create(env, item);
+    return await this.create(env, tenant);
   }
 }
 export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
