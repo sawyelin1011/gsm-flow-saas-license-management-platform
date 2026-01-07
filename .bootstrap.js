@@ -78,7 +78,8 @@ function updateWranglerJsonc() {
 
 function runSetupCommands() {
     const commands = [
-    "bun add next-themes"
+    "bun add next-themes",
+    "bun add react-router-dom@6.28.0"
 ];
     
     if (commands.length === 0) {
