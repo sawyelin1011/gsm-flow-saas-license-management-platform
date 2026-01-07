@@ -11,7 +11,8 @@ import {
   Play,
   HelpCircle,
   BarChart3,
-  Users
+  Users,
+  BookOpen
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -55,6 +56,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const adminItems = [
     { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
     { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
+    { title: 'Technical Docs', icon: BookOpen, href: '/docs' },
   ];
   const getCurrentTitle = () => {
     const allItems = [...menuItems, ...adminItems];

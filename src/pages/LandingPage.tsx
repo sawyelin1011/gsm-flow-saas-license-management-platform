@@ -10,7 +10,9 @@ import {
   Code2, 
   Zap,
   Layout,
-  MousePointer2
+  MousePointer2,
+  BookOpen,
+  Terminal as TerminalIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,10 +33,10 @@ export function LandingPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20 tracking-widest uppercase"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/20 tracking-[0.2em] uppercase"
           >
-            <Rocket className="w-4 h-4" />
-            <span>V2 Fullstack SaaS Engine</span>
+            <Zap className="w-3.5 h-3.5 fill-current" />
+            <span>V2 Fullstack SaaS Engine �� Production Ready</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -123,6 +125,49 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* Developer Documentation Section */}
+      <section className="py-24 border-t border-border/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <h2 className="text-4xl font-black tracking-tight leading-tight">Built for Developers, <br/><span className="text-primary">By Developers.</span></h2>
+              <p className="text-muted-foreground text-lg font-medium leading-relaxed">
+                Extensive markdown documentation for the technical stack and design system is included in the project root. 
+                Start building your custom GSM service with a rock-solid foundation.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold border-primary/20 hover:bg-primary/5" asChild>
+                  <Link to="/docs"><BookOpen className="mr-2 h-4 w-4" /> API Reference</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="grid gap-4">
+              <Card className="glass border-primary/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <TerminalIcon className="w-4 h-4 text-primary" /> tech-stack.md
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground font-mono">
+                  Architectural guide for Hono.js, Cloudflare Workers, and Durable Object persistence.
+                </CardContent>
+              </Card>
+              <Card className="glass border-primary/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                    <Layout className="w-4 h-4 text-primary" /> theme-layout.md
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs text-muted-foreground font-mono">
+                  Comprehensive design system guide including HSL scales, gradients, and animation keyframes.
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
