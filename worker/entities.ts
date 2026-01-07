@@ -13,10 +13,7 @@ export class UserEntity extends IndexedEntity<AppUser> {
     const userTenants = tenants.items.filter(t => t.ownerId === this.id);
     return {
       ...state,
-      plan: {
-        ...plan,
-        tenantLimit: (plan as any).itemLimit || 5 // Fallback for transition
-      },
+      plan,
       tenantCount: userTenants.length
     };
   }
@@ -34,7 +31,7 @@ export class TenantEntity extends IndexedEntity<Tenant> {
     createdAt: 0
   };
   static generateLicenseKey(): string {
-    const segments = Array.from({ length: 3 }, () => 
+    const segments = Array.from({ length: 3 }, () =>
       Math.random().toString(36).substring(2, 6).toUpperCase()
     );
     return `FLOW-${segments.join('-')}`;
@@ -45,6 +42,7 @@ export class TenantEntity extends IndexedEntity<Tenant> {
     const tenant: Tenant = {
       ...data,
       id,
+      domain: data.domain.toLowerCase().trim(),
       status: 'active',
       license: {
         key,
@@ -70,7 +68,7 @@ export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
   };
   static async getTicketsByUser(env: any, userId: string): Promise<SupportTicket[]> {
     const result = await this.list(env);
-    return result.items.filter(t => t.userId === userId);
+    return result.items.filter(t => t.userId === userId).sort((a, b) => b.createdAt - a.createdAt);
   }
 }
 export class InvoiceEntity extends IndexedEntity<Invoice> {

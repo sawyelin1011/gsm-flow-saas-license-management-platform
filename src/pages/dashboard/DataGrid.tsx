@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { api } from '@/lib/api-client';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import type { Tenant } from '@shared/types';
@@ -52,23 +53,30 @@ export function DataGrid() {
     queryFn: () => api<{ items: Tenant[] }>('/api/tenants'),
   });
   const addMutation = useMutation({
-    mutationFn: (vals: any) => api<Tenant>('/api/tenants', { method: 'POST', body: JSON.stringify(vals) }),
-    onSuccess: () => {
+    mutationFn: (vals: { name: string; domain: string }) => 
+      api<Tenant>('/api/tenants', { method: 'POST', body: JSON.stringify(vals) }),
+    onSuccess: (newTenant) => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
       setIsAddOpen(false);
-      toast.success('Tenant provisioned successfully');
-    }
+      toast.success(`Tenant ${newTenant.name} provisioned`);
+      navigator.clipboard.writeText(newTenant.license.key);
+      toast.info('License key copied to clipboard for deployment');
+    },
+    onError: (err: any) => toast.error(err.message || 'Provisioning failed')
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api(`/api/tenants/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tenants'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
       toast.success('Tenant record purged');
-    }
+    },
+    onError: (err: any) => toast.error(err.message || 'Deletion failed')
   });
   const copyKey = (key: string) => {
     navigator.clipboard.writeText(key);
-    toast.success('License key copied to clipboard');
+    toast.success('License key synchronized to clipboard');
   };
   const filteredItems = data?.items?.filter(it =>
     it.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -88,7 +96,9 @@ export function DataGrid() {
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient font-black h-10 text-xs px-6 uppercase tracking-widest"><Plus className="mr-2 h-4 w-4" /> Provision Node</Button>
+            <Button className="btn-gradient font-black h-10 text-xs px-6 uppercase tracking-widest">
+              <Plus className="mr-2 h-4 w-4" /> Provision Node
+            </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -98,10 +108,12 @@ export function DataGrid() {
             <form onSubmit={(e) => {
               e.preventDefault();
               const fd = new FormData(e.currentTarget);
-              addMutation.mutate({
-                name: fd.get('name') as string,
-                domain: fd.get('domain') as string
-              });
+              const name = fd.get('name') as string;
+              const domain = fd.get('domain') as string;
+              if (!domain.includes('.')) {
+                return toast.error('Please enter a valid FQDN domain');
+              }
+              addMutation.mutate({ name, domain });
             }} className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-[10px] uppercase font-bold text-muted-foreground">Cluster Name</Label>
@@ -148,7 +160,7 @@ export function DataGrid() {
               ) : (
                 filteredItems.map((tenant) => (
                   <TableRow key={tenant.id} className="group hover:bg-primary/[0.02] transition-colors border-b last:border-0">
-                    <TableCell className="pl-6 py-3 font-bold text-xs">{tenant.name}</TableCell>
+                    <TableCell className="pl-6 py-3 font-bold text-xs uppercase">{tenant.name}</TableCell>
                     <TableCell className="py-3 text-[10px] font-mono text-muted-foreground">{tenant.domain}</TableCell>
                     <TableCell className="py-3">
                       <Badge variant="outline" className={cn(
@@ -163,14 +175,14 @@ export function DataGrid() {
                     </TableCell>
                     <TableCell className="text-right pr-6 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => copyKey(tenant.license.key)}>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary" onClick={() => copyKey(tenant.license.key)}>
                           <Copy className="h-3.5 w-3.5" />
                         </Button>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-7 w-7"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground"><MoreHorizontal className="h-3.5 w-3.5" /></Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuContent align="end" className="w-48 glass">
                             <DropdownMenuItem className="text-destructive font-bold text-xs" onClick={() => deleteMutation.mutate(tenant.id)}>
                               <Trash2 className="mr-2 h-3 w-3" /> Revoke & Purge
                             </DropdownMenuItem>
