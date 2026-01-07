@@ -34,93 +34,36 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { api } from '@/lib/api-client';
 import type { UserProfile } from '@shared/types';
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const isMobile = useIsMobile();
-  const { pathname } = useLocation();
-  const { data: profile } = useQuery<UserProfile>({
-    queryKey: ['me'],
-    queryFn: () => api<UserProfile>('/api/me'),
-  });
-  const isAdmin = React.useMemo(() =>
-    profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
-    [profile]
-  );
-  const menuItems = [
-    { title: 'Console', icon: LayoutDashboard, href: '/dashboard' },
-    { title: 'Registry', icon: List, href: '/dashboard/data' },
-    { title: 'Test Bench', icon: Play, href: '/dashboard/test' },
-    { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
-    { title: 'Support', icon: HelpCircle, href: '/dashboard/support' },
-    { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
-  ];
-  const adminItems = [
-    { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
-    { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
-    { title: 'Technical Docs', icon: BookOpen, href: '/docs' },
-  ];
-  const getCurrentTitle = () => {
-    const allItems = [...menuItems, ...adminItems];
-    const item = allItems.find(i => i.href === pathname);
-    if (item) return item.title;
-    // Handle nested sub-routes
-    if (pathname.startsWith('/dashboard/admin/users')) return 'Operator Mgmt';
-    if (pathname.startsWith('/dashboard/admin')) return 'System Overview';
-    return 'Core Console';
-  };
-  const handleLogout = () => window.location.replace('/');
-  const MobileSidebar = () => (
-    <div className="fixed left-0 top-0 z-20 w-16 h-screen bg-card/95 backdrop-blur border-r border-border/50 shadow-lg flex flex-col py-2 px-1 gap-1 overflow-hidden">
-      <div className="p-3 border-b border-border/30 flex items-center justify-center">
-        <Zap className="w-3.5 h-3.5 text-primary" />
-      </div>
-      <div className="flex-1 flex flex-col gap-1 p-1">
-        {menuItems.map((item) => (
-          <Link
-            key={item.href}
-            to={item.href}
-            title={item.title}
-            className={cn(
-              "h-12 w-full flex items-center justify-center rounded",
-              pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-primary",
-              "active:bg-primary/20"
-            )}
-          >
-            <item.icon className="w-3.5 h-3.5 mx-auto" />
-          </Link>
-        ))}
-        {isAdmin && (
-          <>
-            <div className="my-3 mx-2 h-px bg-border/50" />
-            {adminItems.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                title={item.title}
-                className={cn(
-                  "h-12 w-full flex items-center justify-center rounded",
-                  pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-primary",
-                  "active:bg-primary/20"
-                )}
-              >
-                <item.icon className="w-3.5 h-3.5 mx-auto" />
-              </Link>
-            ))}
-          </>
-        )}
-      </div>
-    </div>
-  );
-  const Header = () => (
+interface NavItem {
+  title: string;
+  icon: React.ElementType;
+  href: string;
+}
+const MENU_ITEMS: NavItem[] = [
+  { title: 'Console', icon: LayoutDashboard, href: '/dashboard' },
+  { title: 'Registry', icon: List, href: '/dashboard/data' },
+  { title: 'Test Bench', icon: Play, href: '/dashboard/test' },
+  { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
+  { title: 'Support', icon: HelpCircle, href: '/dashboard/support' },
+  { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
+];
+const ADMIN_ITEMS: NavItem[] = [
+  { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
+  { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
+  { title: 'Technical Docs', icon: BookOpen, href: '/docs' },
+];
+function Header({ profile, title, onLogout }: { profile?: UserProfile, title: string, onLogout: () => void }) {
+  return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 md:px-8 backdrop-blur-md">
       <div className="flex items-center gap-2">
         <h2 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
           <ChevronRight className="w-3 h-3 text-primary" />
-          {getCurrentTitle()}
+          {title}
         </h2>
       </div>
       <div className="flex items-center gap-2">
         <div
-          className="w-8 h-8 rounded-full bg-gradient-to-br from-muted to-accent/30 flex items-center justify-center font-black text-sm shrink-0 cursor-default"
+          className="w-8 h-8 rounded-full bg-gradient-to-br from-muted to-accent/30 flex items-center justify-center font-black text-sm shrink-0 cursor-default border border-border/50"
           title={profile?.name || profile?.email || ''}
         >
           {!profile ? (
@@ -134,7 +77,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           variant="ghost"
           size="icon"
           className="h-8 w-8 p-0"
-          onClick={handleLogout}
+          onClick={onLogout}
           title="Logout"
         >
           <LogOut className="w-4 h-4" />
@@ -142,21 +85,85 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
     </header>
   );
-  const Main = ({ children }: { children: React.ReactNode }) => (
-    <main className="flex-1 w-full dashboard-content p-4 md:p-8 animate-fade-in">
-      {children}
-    </main>
+}
+function MobileSidebar({ pathname, isAdmin }: { pathname: string, isAdmin: boolean }) {
+  return (
+    <div className="fixed left-0 top-0 z-20 w-16 h-screen bg-card/95 backdrop-blur border-r border-border/50 shadow-lg flex flex-col py-2 px-1 gap-1 overflow-hidden">
+      <div className="p-3 border-b border-border/30 flex items-center justify-center">
+        <Zap className="w-3.5 h-3.5 text-primary" />
+      </div>
+      <div className="flex-1 flex flex-col gap-1 p-1">
+        {MENU_ITEMS.map((item) => (
+          <Link
+            key={item.href}
+            to={item.href}
+            title={item.title}
+            className={cn(
+              "h-12 w-full flex items-center justify-center rounded transition-colors",
+              pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-primary",
+              "active:bg-primary/20"
+            )}
+          >
+            <item.icon className="w-3.5 h-3.5 mx-auto" />
+          </Link>
+        ))}
+        {isAdmin && (
+          <>
+            <div className="my-3 mx-2 h-px bg-border/50" />
+            {ADMIN_ITEMS.map((item) => (
+              <Link
+                key={item.href}
+                to={item.href}
+                title={item.title}
+                className={cn(
+                  "h-12 w-full flex items-center justify-center rounded transition-colors",
+                  pathname === item.href ? "bg-primary/20 text-primary" : "text-muted-foreground hover:bg-accent hover:text-primary",
+                  "active:bg-primary/20"
+                )}
+              >
+                <item.icon className="w-3.5 h-3.5 mx-auto" />
+              </Link>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
   );
+}
+export function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile();
+  const { pathname } = useLocation();
+  const { data: profile } = useQuery<UserProfile>({
+    queryKey: ['me'],
+    queryFn: () => api<UserProfile>('/api/me'),
+  });
+  const isAdmin = React.useMemo(() =>
+    profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
+    [profile]
+  );
+  const currentTitle = React.useMemo(() => {
+    const allItems = [...MENU_ITEMS, ...ADMIN_ITEMS];
+    const item = allItems.find(i => i.href === pathname);
+    if (item) return item.title;
+    if (pathname.startsWith('/dashboard/admin/users')) return 'Operator Mgmt';
+    if (pathname.startsWith('/dashboard/admin')) return 'System Overview';
+    return 'Core Console';
+  }, [pathname]);
+  const handleLogout = React.useCallback(() => {
+    window.location.replace('/');
+  }, []);
   return (
     <>
       {isMobile ? (
-        <>
-          <MobileSidebar />
-          <div className="ml-16 bg-muted/5 min-h-screen flex flex-col flex-1">
-            <Header />
-            <Main>{children}</Main>
+        <div className="flex min-h-screen">
+          <MobileSidebar pathname={pathname} isAdmin={isAdmin} />
+          <div className="ml-16 bg-muted/5 min-h-screen flex flex-col flex-1 overflow-hidden">
+            <Header profile={profile} title={currentTitle} onLogout={handleLogout} />
+            <main className="flex-1 w-full dashboard-content p-4 md:p-8 animate-fade-in">
+              {children}
+            </main>
           </div>
-        </>
+        </div>
       ) : (
         <SidebarProvider defaultOpen={true}>
           <Sidebar collapsible="icon" className="border-r border-border/50">
@@ -168,7 +175,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </SidebarHeader>
             <SidebarContent className="p-2">
               <SidebarMenu>
-                {menuItems.map((item) => (
+                {MENU_ITEMS.map((item) => (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
@@ -198,7 +205,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Authority</p>
                   </div>
                   <SidebarMenu>
-                    {adminItems.map((item) => (
+                    {ADMIN_ITEMS.map((item) => (
                       <SidebarMenuItem key={item.href}>
                         <SidebarMenuButton
                           asChild
@@ -227,8 +234,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <SidebarRail />
           </Sidebar>
           <SidebarInset className="bg-muted/5 min-h-screen flex flex-col">
-            <Header />
-            <Main>{children}</Main>
+            <Header profile={profile} title={currentTitle} onLogout={handleLogout} />
+            <main className="flex-1 w-full dashboard-content p-4 md:p-8 animate-fade-in">
+              {children}
+            </main>
           </SidebarInset>
         </SidebarProvider>
       )}

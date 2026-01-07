@@ -1,41 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useTheme as useNextTheme } from 'next-themes';
 /**
  * Custom hook to manage the application's color theme.
- * Environment-aware to prevent crashes in non-browser environments 
- * and during initial hydration.
+ * Wrapper around next-themes to provide a stable interface.
  */
 export function useTheme() {
-  const [isDark, setIsDark] = useState(() => {
-    try {
-      if (typeof window === 'undefined' || !window.localStorage) {
-        return false;
-      }
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme) {
-        return savedTheme === 'dark';
-      }
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    } catch (error) {
-      console.warn('Failed to access theme preferences:', error);
-      return false;
-    }
-  });
-  useEffect(() => {
-    try {
-      if (typeof document === 'undefined') return;
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-      }
-    } catch (error) {
-      console.error('Failed to update theme classes:', error);
-    }
-  }, [isDark]);
+  const { theme, setTheme, resolvedTheme } = useNextTheme();
+  const isDark = resolvedTheme === 'dark';
   const toggleTheme = () => {
-    setIsDark(prev => !prev);
+    setTheme(isDark ? 'light' : 'dark');
   };
-  return { isDark, toggleTheme };
+  return { 
+    isDark, 
+    toggleTheme, 
+    theme, 
+    setTheme, 
+    resolvedTheme 
+  };
 }

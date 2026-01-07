@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 const MOCK_TRAFFIC_DATA = Array.from({ length: 30 }, (_, i) => ({
   date: format(new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000), 'MMM dd'),
   validations: Math.floor(Math.random() * 5000) + 2000,
@@ -65,7 +66,7 @@ export function AdminDashboard() {
             <CardDescription className="text-xs">License validation attempts (Last 30 days)</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 p-2 pt-6">
-            <div className="w-full aspect-[4/3] sm:aspect-video min-h-[250px]">
+            <div className="w-full h-[250px] md:h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={MOCK_TRAFFIC_DATA}>
                   <defs>
@@ -84,7 +85,14 @@ export function AdminDashboard() {
                     hide={isMobile}
                   />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))', 
+                      borderRadius: '8px',
+                      fontSize: '11px'
+                    }} 
+                  />
                   <Area type="monotone" dataKey="validations" stroke="hsl(var(--primary))" fillOpacity={1} fill="url(#colorVal)" strokeWidth={3} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -143,7 +151,7 @@ export function AdminDashboard() {
                 {recentTenants?.items?.map((tenant: any) => (
                   <tr key={tenant.id} className="border-b hover:bg-muted/10 transition-colors">
                     <td className="p-4 font-bold text-xs text-foreground">{tenant.name}</td>
-                    <td className="p-4 text-xs text-muted-foreground">{tenant.ownerId}</td>
+                    <td className="p-4 text-xs text-muted-foreground font-mono">{tenant.ownerId.slice(0, 8)}</td>
                     <td className="p-4 font-mono text-[10px] text-muted-foreground">
                       {tenant.createdAt ? format(tenant.createdAt, 'MMM dd, HH:mm') : 'N/A'}
                     </td>
@@ -163,13 +171,13 @@ export function AdminDashboard() {
 }
 function StatCard({ title, value, icon, description }: { title: string; value: string; icon: React.ReactNode; description: string }) {
   return (
-    <Card className="border-border/50 shadow-sm p-3 md:p-4">
+    <Card className="border-border/50 shadow-sm p-3 md:p-4 hover:border-primary/40 transition-colors">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
         <div className="text-muted-foreground/60">{icon}</div>
       </div>
       <div className="text-lg md:text-2xl font-bold tracking-tight text-foreground truncate">{value}</div>
-      <p className="text-[8px] md:text-[10px] text-muted-foreground mt-1 truncate font-medium">{description}</p>
+      <p className="text-[8px] md:text-[10px] text-muted-foreground mt-1 truncate font-medium uppercase tracking-tighter">{description}</p>
     </Card>
   );
 }

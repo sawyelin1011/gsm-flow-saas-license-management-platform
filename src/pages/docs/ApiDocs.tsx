@@ -8,7 +8,8 @@ import {
   ChevronRight,
   Zap,
   Globe,
-  Settings
+  Settings,
+  RotateCcw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,26 +25,40 @@ export function ApiDocs() {
   const [isValidating, setIsValidating] = React.useState(false);
   const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
   const handleTest = async () => {
-    if (!testKey || !testDomain) return toast.error('Required data missing');
+    if (!testKey || !testDomain) {
+      toast.error('Required data missing: Please enter Key and Domain');
+      return;
+    }
     setIsValidating(true);
+    setValidationResult(null);
     try {
       const res = await api('/api/validate-license', {
         method: 'POST',
         body: JSON.stringify({ key: testKey, domain: testDomain })
       });
       setValidationResult(res);
-      toast.success('Simulation complete');
-    } catch (e) {
-      toast.error('Authority node unreachable');
+      if (res.valid) {
+        toast.success('Simulation complete: Node Authorized');
+      } else {
+        toast.warning('Simulation complete: Authorization Denied');
+      }
+    } catch (e: any) {
+      toast.error(e.message || 'Authority node unreachable');
+      setValidationResult({ success: false, error: e.message });
     } finally {
       setIsValidating(false);
     }
+  };
+  const resetPlayground = () => {
+    setTestKey('');
+    setTestDomain('');
+    setValidationResult(null);
   };
   const copyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
     setCopiedCode(id);
     setTimeout(() => setCopiedCode(null), 2000);
-    toast.success('Snippet synchronized');
+    toast.success('Snippet synchronized to clipboard');
   };
   const snippets = {
     curl: `curl -X POST https://auth.gsmflow.com/v1/validate \\
@@ -74,7 +89,7 @@ export function ApiDocs() {
           </div>
           <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
             <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-2">Technical Support</p>
-            <p className="text-xs text-muted-foreground leading-relaxed">Direct line for enterprise developers is open 24/7.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">Direct line for enterprise developers is open 24/7 via the dashboard.</p>
           </div>
         </aside>
         {/* Content */}
@@ -96,7 +111,7 @@ export function ApiDocs() {
               <h2 className="text-3xl font-bold tracking-tight">Validation Gateway</h2>
             </div>
             <div className="space-y-4">
-              <div className="flex items-center gap-3 font-mono text-sm bg-muted/50 p-5 rounded-2xl border border-border/50 shadow-inner group transition-all hover:border-primary/30">
+              <div className="flex items-center gap-3 font-mono text-sm bg-muted/50 dark:bg-muted/10 p-5 rounded-2xl border border-border/50 shadow-inner group transition-all hover:border-primary/30">
                 <span className="px-3 py-1 rounded-lg bg-primary text-primary-foreground font-black text-[10px] uppercase tracking-widest shadow-glow">POST</span>
                 <span className="text-muted-foreground font-bold">/v1/validate</span>
               </div>
@@ -110,18 +125,23 @@ export function ApiDocs() {
                   <Terminal className="w-4 h-4 text-primary" /> Implementation Sample
                 </h3>
                 <div className="relative group overflow-hidden rounded-3xl border border-border/50 bg-slate-950 shadow-2xl">
-                  <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-all">
+                  <div className="absolute right-4 top-4 opacity-0 group-hover:opacity-100 transition-all z-10">
                     <Button variant="outline" size="icon" className="h-10 w-10 bg-white/10 border-white/20 text-white hover:bg-primary hover:border-primary" onClick={() => copyCode(snippets.curl, 'curl')}>
                       {copiedCode === 'curl' ? <Check className="w-5 h-5 text-cyan-400" /> : <Copy className="w-5 h-5" />}
                     </Button>
                   </div>
-                  <pre className="p-8 text-xs sm:text-sm overflow-x-auto font-mono text-slate-300 leading-relaxed">
+                  <pre className="p-8 text-xs sm:text-sm overflow-x-auto font-mono text-slate-300 leading-relaxed scrollbar-thin scrollbar-thumb-slate-800">
                     {snippets.curl}
                   </pre>
                 </div>
               </div>
               <Card className="border-primary shadow-glow bg-primary/[0.02] flex flex-col">
-                <CardHeader className="border-b border-primary/10">
+                <CardHeader className="border-b border-primary/10 relative">
+                  <div className="absolute right-4 top-4">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={resetPlayground} title="Reset Playground">
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  </div>
                   <CardTitle className="text-xl flex items-center gap-3 font-black">
                     <Zap className="w-6 h-6 text-cyan-500 floating" /> Protocol Playground
                   </CardTitle>
@@ -158,12 +178,14 @@ export function ApiDocs() {
                   {validationResult && (
                     <div className={cn(
                       "mt-6 p-5 rounded-2xl border text-xs font-mono transition-all animate-fade-in",
-                      validationResult.valid 
-                        ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400' 
+                      validationResult.valid
+                        ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
                         : 'bg-rose-500/10 border-rose-500/30 text-rose-600'
                     )}>
                       <p className="font-black uppercase tracking-widest mb-3 text-[10px]">Response Payload:</p>
-                      <pre className="whitespace-pre-wrap leading-relaxed">{JSON.stringify(validationResult, null, 2)}</pre>
+                      <pre className="whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto scrollbar-thin">
+                        {JSON.stringify(validationResult, null, 2)}
+                      </pre>
                     </div>
                   )}
                 </CardContent>
@@ -185,8 +207,8 @@ function NavGroup({ title, items, active }: { title: string, items: string[], ac
           variant="ghost"
           className={cn(
             "w-full justify-between h-10 px-3 text-sm font-bold transition-all rounded-xl",
-            active === item 
-              ? 'bg-primary/10 text-primary border-r-2 border-primary shadow-sm' 
+            active === item
+              ? 'bg-primary/10 text-primary border-r-2 border-primary shadow-sm'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
