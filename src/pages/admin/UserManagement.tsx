@@ -9,7 +9,9 @@ import {
   Mail,
   Loader2,
   CheckCircle2,
-  Lock
+  Lock,
+  ChevronRight,
+  Database
 } from 'lucide-react';
 import {
   Card,
@@ -56,9 +58,9 @@ export function UserManagement() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast.success('Operator subscription tier updated');
+      toast.success('Operator subscription tier successfully elevated');
     },
-    onError: (err: any) => toast.error(err?.message || 'Update failed')
+    onError: (err: any) => toast.error(err?.message || 'Authority update failed')
   });
   const filteredUsers = React.useMemo(() => {
     return users?.filter(u =>
@@ -66,29 +68,37 @@ export function UserManagement() {
       u.email?.toLowerCase().includes(search.toLowerCase())
     ) ?? [];
   }, [users, search]);
+  const handleProvisionRequest = () => {
+    toast.info('Direct Operator Provisioning is restricted to Master Admin terminals.');
+  };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-6 md:space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-6 md:space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground">Operator Clusters</h1>
-          <p className="text-sm text-muted-foreground font-medium">Manage global subscription registry and authority levels.</p>
+          <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight text-foreground">Operator Registry</h1>
+          <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
+            <Database className="w-3.5 h-3.5 text-primary" />
+            Manage global cluster subscription authority and access tiers.
+          </p>
         </div>
-        <Button className="btn-gradient w-full sm:w-auto font-black h-11 text-xs uppercase tracking-widest px-8">
+        <Button onClick={handleProvisionRequest} className="btn-gradient w-full sm:w-auto font-black h-11 text-xs uppercase tracking-widest px-8 shadow-glow">
           <UserPlus className="mr-2 h-4 w-4" /> Provision Operator
         </Button>
       </div>
-      <Card className="border-border/50 shadow-sm overflow-hidden flex flex-col">
+      <Card className="border-border/50 shadow-soft overflow-hidden flex flex-col">
         <CardHeader className="bg-muted/5 border-b p-4 md:p-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-xs font-black uppercase tracking-widest text-foreground">Registry Directory</CardTitle>
-              <CardDescription className="text-xs">Database of {users?.length || 0} distributed operators.</CardDescription>
+              <CardTitle className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                <ChevronRight className="w-3.5 h-3.5 text-primary" /> Registry Directory
+              </CardTitle>
+              <CardDescription className="text-[10px] font-bold uppercase tracking-widest opacity-60">Database of {users?.length || 0} distributed global operators.</CardDescription>
             </div>
-            <div className="relative w-full lg:w-80">
+            <div className="relative w-full lg:w-96">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search identity or registry email..."
-                className="pl-9 bg-background/50 border-border/50 h-10 text-xs font-medium focus:ring-primary"
+                placeholder="Search identity or registry email address..."
+                className="pl-9 bg-background/50 border-border/50 h-10 text-xs font-medium focus:ring-primary shadow-inner"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -100,82 +110,89 @@ export function UserManagement() {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow>
-                  <TableHead className="min-w-[200px] text-[10px] font-black uppercase tracking-widest text-muted-foreground pl-6">Operator Identity</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Subscription Tier</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Registry Authority</TableHead>
-                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Joined</TableHead>
-                  <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground pr-6">Command</TableHead>
+                  <TableHead className="min-w-[250px] text-[10px] font-black uppercase tracking-widest text-muted-foreground pl-6 h-12">Operator Identity</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Subscription Tier</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Authority State</TableHead>
+                  <TableHead className="text-[10px] font-black uppercase tracking-widest text-muted-foreground h-12">Registry Date</TableHead>
+                  <TableHead className="text-right text-[10px] font-black uppercase tracking-widest text-muted-foreground pr-6 h-12">Command</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-48 text-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Syncing Authority Registry...</span>
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Syncing Master Registry...</span>
                       </div>
                     </TableCell>
                   </TableRow>
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-48 text-center text-muted-foreground italic text-sm">
-                      No matching operator identities found in global registry.
+                    <TableCell colSpan={5} className="h-48 text-center text-muted-foreground italic text-sm uppercase font-black tracking-widest opacity-30">
+                      No matching identities found in authority database.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredUsers.map((user) => (
-                    <TableRow key={user.id} className="hover:bg-primary/[0.01] transition-colors group border-b last:border-0">
-                      <TableCell className="pl-6">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-xs uppercase text-foreground group-hover:text-primary transition-colors">{user.name}</span>
-                          <span className="text-[10px] font-mono text-muted-foreground">{user.email}</span>
+                    <TableRow key={user.id} className="hover:bg-primary/[0.02] transition-colors group border-b last:border-0">
+                      <TableCell className="pl-6 py-4">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold text-xs uppercase text-foreground group-hover:text-primary transition-colors tracking-tight">{user.name}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground opacity-70">{user.email}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="capitalize text-[9px] font-black border-primary/20 bg-primary/5 text-primary">
-                          {user.planId}
+                        <Badge variant="outline" className={cn(
+                          "capitalize text-[9px] font-black px-2 py-0.5 border-none",
+                          user.planId === 'agency' ? "bg-indigo-500/10 text-indigo-600" : 
+                          user.planId === 'growth' ? "bg-cyan-500/10 text-cyan-600" : "bg-slate-500/10 text-slate-600"
+                        )}>
+                          {user.planId} Tier
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                          <span className="text-[10px] font-black uppercase tracking-tighter text-foreground">Authorized</span>
+                        <div className="flex items-center gap-2">
+                          <div className="relative h-2 w-2">
+                            <div className="absolute inset-0 bg-emerald-500 rounded-full animate-ping opacity-20" />
+                            <div className="h-full w-full rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                          </div>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-foreground">Authorized</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-[10px] font-mono">
+                      <TableCell className="text-muted-foreground text-[10px] font-mono font-bold uppercase">
                         {new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </TableCell>
-                      <TableCell className="text-right pr-6">
+                      <TableCell className="text-right pr-6 py-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-primary/10 text-muted-foreground">
+                            <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-muted text-muted-foreground transition-colors">
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 glass">
-                            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Registry Command</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => window.location.href = `mailto:${user.email}`} className="text-xs font-bold focus:bg-primary/5">
-                              <Mail className="mr-2 h-3.5 w-3.5 text-primary" /> Contact Operator
+                          <DropdownMenuContent align="end" className="w-60 glass">
+                            <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 py-2">Authority Management</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => window.location.href = `mailto:${user.email}`} className="text-xs font-bold py-2 focus:bg-primary/5 cursor-pointer">
+                              <Mail className="mr-2 h-4 w-4 text-primary" /> Contact Operator
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
-                              className="text-xs font-bold focus:bg-primary/5"
-                              disabled={user.planId === 'pro' || updatePlanMutation.isPending}
-                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'pro' })}
+                              className="text-xs font-bold py-2 focus:bg-cyan-500/10 cursor-pointer"
+                              disabled={user.planId === 'growth' || updatePlanMutation.isPending}
+                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'growth' })}
                             >
-                              <Shield className="mr-2 h-3.5 w-3.5 text-cyan-500" /> Elevate: Pro Cluster
+                              <Shield className="mr-2 h-4 w-4 text-cyan-500" /> Elevate: Growth Tier
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-xs font-bold focus:bg-primary/5"
-                              disabled={user.planId === 'enterprise' || updatePlanMutation.isPending}
-                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'enterprise' })}
+                              className="text-xs font-bold py-2 focus:bg-indigo-500/10 cursor-pointer"
+                              disabled={user.planId === 'agency' || updatePlanMutation.isPending}
+                              onClick={() => updatePlanMutation.mutate({ id: user.id, planId: 'agency' })}
                             >
-                              <Lock className="mr-2 h-3.5 w-3.5 text-indigo-500" /> Elevate: Carrier Tier
+                              <Lock className="mr-2 h-4 w-4 text-indigo-500" /> Elevate: Agency Tier
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive text-xs font-black focus:bg-destructive/10">
-                              <Ban className="mr-2 h-3.5 w-3.5" /> Revoke Node Authority
+                            <DropdownMenuItem className="text-destructive text-xs font-black py-2 focus:bg-destructive/10 cursor-pointer">
+                              <Ban className="mr-2 h-4 w-4" /> Revoke Node Authority
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
