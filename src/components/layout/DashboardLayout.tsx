@@ -7,13 +7,12 @@ import {
   LogOut,
   Zap,
   ChevronRight,
-  List,
-  Play,
   HelpCircle,
   BarChart3,
   Users,
   BookOpen,
-  Key
+  Key,
+  Play
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -91,7 +90,7 @@ function MobileSidebar({ pathname, isAdmin }: { pathname: string, isAdmin: boole
   return (
     <div className="fixed left-0 top-0 z-20 w-16 h-screen bg-card/95 backdrop-blur border-r border-border/50 shadow-lg flex flex-col py-2 px-1 gap-1 overflow-hidden">
       <div className="p-3 border-b border-border/30 flex items-center justify-center">
-        <Zap className="w-3.5 h-3.5 text-primary" />
+        <Zap className="w-4 h-4 text-primary" />
       </div>
       <div className="flex-1 flex flex-col gap-1 p-1">
         {MENU_ITEMS.map((item) => (
@@ -105,7 +104,7 @@ function MobileSidebar({ pathname, isAdmin }: { pathname: string, isAdmin: boole
               "active:bg-primary/20"
             )}
           >
-            <item.icon className="w-3.5 h-3.5 mx-auto" />
+            <item.icon className="w-4 h-4 mx-auto" />
           </Link>
         ))}
         {isAdmin && (
@@ -122,7 +121,7 @@ function MobileSidebar({ pathname, isAdmin }: { pathname: string, isAdmin: boole
                   "active:bg-primary/20"
                 )}
               >
-                <item.icon className="w-3.5 h-3.5 mx-auto" />
+                <item.icon className="w-4 h-4 mx-auto" />
               </Link>
             ))}
           </>
@@ -138,7 +137,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
-  const isAdmin = React.useMemo(() => 
+  const isAdmin = React.useMemo(() =>
     profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
     [profile]
   );
@@ -146,7 +145,6 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const allItems = [...MENU_ITEMS, ...ADMIN_ITEMS];
     const item = allItems.find(i => i.href === pathname);
     if (item) return item.title;
-    if (pathname.startsWith('/dashboard/admin/users')) return 'Operator Mgmt';
     if (pathname.startsWith('/dashboard/admin')) return 'Admin Dashboard';
     return 'Authority Console';
   }, [pathname]);

@@ -42,13 +42,13 @@ export function LandingPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]"
+            className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.9] max-w-5xl mx-auto"
           >
             Launch Your Own <br />
-            <span className="text-gradient">GSM Platform</span>
+            <span className="text-gradient">GSM Services Platform</span>
           </motion.h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Take absolute authority over your GSM service clusters. Issue cryptographically signed licenses, provision tenants, and manage global installations with ease.
+            Take absolute authority over your GSM service clusters. Issue cryptographically signed licenses, provision tenants, and manage global installations with sovereign control.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Button size="lg" className="btn-gradient rounded-full px-10 h-14 text-lg font-black shadow-glow" asChild>
@@ -62,8 +62,8 @@ export function LandingPage() {
         {/* Workflow Section */}
         <section className="py-24 bg-muted/30 rounded-[3rem] p-12 mb-24 border border-border/50">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black mb-4">The Authority Protocol</h2>
-            <p className="text-muted-foreground">Complete control from provisioning to validation.</p>
+            <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter">The Authority Protocol</h2>
+            <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Complete control from provisioning to validation.</p>
           </div>
           <div className="grid md:grid-cols-4 gap-8 text-center">
             <WorkflowItem icon={<Lock />} title="License Management" desc="Generate unique, cryptographically secure keys for every installation." />
@@ -82,12 +82,12 @@ export function LandingPage() {
           <FeatureCard
             icon={<ShieldCheck className="w-8 h-8" />}
             title="Sovereign Control"
-            description="You own the registry. Revoke, suspend, or upgrade service licenses instantly with a single click."
+            description="You own the registry. Revoke, suspend, or upgrade service licenses instantly with a single click from your operator portal."
           />
           <FeatureCard
             icon={<Code2 className="w-8 h-8" />}
             title="SDK Integration"
-            description="Drop-in authorization libraries for Go, Python, and Node.js to secure your GSM server logic."
+            description="Drop-in authorization libraries for Go, Python, and Node.js to secure your GSM server cluster logic."
           />
         </section>
         {/* Pricing Section */}
@@ -138,7 +138,7 @@ function WorkflowItem({ icon, title, desc }: { icon: React.ReactNode, title: str
         {icon}
       </div>
       <h3 className="font-bold text-sm uppercase tracking-tight">{title}</h3>
-      <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }

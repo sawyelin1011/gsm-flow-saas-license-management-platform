@@ -1,5 +1,5 @@
 import { IndexedEntity } from "./core-utils";
-import type { AppUser, Tenant, UserProfile, SupportTicket, Invoice } from "@shared/types";
+import type { AppUser, Tenant, UserProfile, SupportTicket, Invoice, Plan } from "@shared/types";
 export class UserEntity extends IndexedEntity<AppUser> {
   static readonly entityName = "user";
   static readonly indexName = "users";
@@ -7,10 +7,10 @@ export class UserEntity extends IndexedEntity<AppUser> {
   static readonly seedData: AppUser[] = [{id: 'admin-demo', name: 'GSM Authority Admin', email: 'admin@gsmflow.com', planId: 'growth'}];
   async getProfile(env: any): Promise<UserProfile> {
     const state = await this.getState();
-    const MOCK_PLANS = [
-      {id: 'launch', name: 'Launch', tenantLimit: 1, price: 0, interval: 'monthly', features: []},
-      {id: 'growth', name: 'Growth', tenantLimit: 10, price: 49, interval: 'monthly', features: ['Priority support']},
-      {id: 'agency', name: 'Agency', tenantLimit: 50, price: 199, interval: 'monthly', features: ['White-label', 'Early access']}
+    const MOCK_PLANS: Plan[] = [
+      {id: 'launch', name: 'Launch', tenantLimit: 1, price: 49, interval: 'month', features: []},
+      {id: 'growth', name: 'Growth', tenantLimit: 10, price: 149, interval: 'month', features: ['Priority support']},
+      {id: 'agency', name: 'Agency', tenantLimit: 100, price: 499, interval: 'month', features: ['White-label', 'Early access']}
     ];
     const plan = MOCK_PLANS.find(p => p.id === state.planId) || MOCK_PLANS[0];
     const tenants = await TenantEntity.list(env);
@@ -21,7 +21,6 @@ export class UserEntity extends IndexedEntity<AppUser> {
       tenantCount: userTenants.length
     };
   }
-
   static async ensureSeed(env: any): Promise<void> {
     const result = await this.list(env);
     if (!result.items || result.items.length === 0) {
@@ -64,7 +63,7 @@ export class TenantEntity extends IndexedEntity<Tenant> {
       },
       createdAt: Date.now()
     };
-    console.log(`[Authority] Provisioning new GSM Tenant: ${tenant.name} for domain ${tenant.domain}`);
+    console.log(`[Authority Node] Provisioning new GSM Tenant: ${tenant.name} for domain ${tenant.domain}`);
     return await this.create(env, tenant);
   }
 }

@@ -5,12 +5,9 @@ import {
   Search,
   MoreHorizontal,
   Trash2,
-  Server,
   Loader2,
   Copy,
   Globe,
-  Check,
-  ShieldCheck,
   Key,
   Clock,
   AlertTriangle
@@ -116,13 +113,13 @@ export function DataGrid() {
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="btn-gradient font-black h-10 text-xs px-6 uppercase tracking-widest shadow-glow">
-              <Plus className="mr-2 h-4 w-4" /> Provision Tenant
+              <Plus className="mr-2 h-4 w-4" /> Provision GSM Tenant
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md glass">
             <DialogHeader>
               <DialogTitle className="text-sm font-black uppercase tracking-widest">New GSM Tenant Installation</DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">Register a new service installation to generate a bound cryptographic license.</DialogDescription>
+              <DialogDescription className="text-xs text-muted-foreground">Register a new service cluster to generate a bound cryptographic license.</DialogDescription>
             </DialogHeader>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -197,9 +194,11 @@ export function DataGrid() {
                         {tenant.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="py-4 text-[10px] font-bold text-muted-foreground flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" />
-                      {tenant.lastValidated ? format(tenant.lastValidated, 'MMM dd, HH:mm') : 'Never'}
+                    <TableCell className="py-4 text-[10px] font-bold text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3 h-3" />
+                        {tenant.lastValidated ? format(tenant.lastValidated, 'MMM dd, HH:mm') : 'Never'}
+                      </div>
                     </TableCell>
                     <TableCell className="py-4">
                       <div className="flex items-center gap-2">
@@ -241,7 +240,7 @@ export function DataGrid() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="h-10 text-[10px] font-black uppercase tracking-widest rounded-lg border-border/50">Abort Mission</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => deletingId && deleteMutation.mutate(deletingId)}
               className="h-10 text-[10px] font-black uppercase tracking-widest rounded-lg bg-destructive hover:bg-destructive/90 shadow-lg shadow-destructive/20"
             >

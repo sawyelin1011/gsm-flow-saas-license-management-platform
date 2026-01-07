@@ -37,63 +37,78 @@ const queryClient = new QueryClient({
     },
   },
 });
+/**
+ * Root Layout to provide global UI elements within the Router context.
+ * This ensures hooks like useNavigate (used by Toaster or other components) work correctly.
+ */
+function RootLayout() {
+  return (
+    <>
+      <Outlet />
+      <Toaster richColors closeButton position="top-right" />
+    </>
+  );
+}
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/login",
-    element: <Auth />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/docs",
-    element: <ApiDocs />,
-    errorElement: <RouteErrorBoundary />,
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <DashboardLayout>
-        <Outlet />
-      </DashboardLayout>
-    ),
+    element: <RootLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
       {
         index: true,
-        element: <DashboardHome />,
+        element: <LandingPage />,
       },
       {
-        path: "data",
-        element: <DataGrid />,
+        path: "login",
+        element: <Auth />,
       },
       {
-        path: "billing",
-        element: <Billing />,
+        path: "docs",
+        element: <ApiDocs />,
       },
       {
-        path: "support",
-        element: <Support />,
+        path: "dashboard",
+        element: (
+          <DashboardLayout>
+            <Outlet />
+          </DashboardLayout>
+        ),
+        children: [
+          {
+            index: true,
+            element: <DashboardHome />,
+          },
+          {
+            path: "data",
+            element: <DataGrid />,
+          },
+          {
+            path: "billing",
+            element: <Billing />,
+          },
+          {
+            path: "support",
+            element: <Support />,
+          },
+          {
+            path: "test",
+            element: <TestBench />,
+          },
+          {
+            path: "settings",
+            element: <Settings />,
+          },
+          {
+            path: "admin",
+            element: <AdminDashboard />,
+          },
+          {
+            path: "admin/users",
+            element: <UserManagement />,
+          }
+        ],
       },
-      {
-        path: "test",
-        element: <TestBench />,
-      },
-      {
-        path: "settings",
-        element: <Settings />,
-      },
-      {
-        path: "admin",
-        element: <AdminDashboard />,
-      },
-      {
-        path: "admin/users",
-        element: <UserManagement />,
-      }
     ],
   },
 ]);
@@ -103,7 +118,6 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <ErrorBoundary>
           <RouterProvider router={router} />
-          <Toaster richColors closeButton position="top-right" />
         </ErrorBoundary>
       </ThemeProvider>
     </QueryClientProvider>

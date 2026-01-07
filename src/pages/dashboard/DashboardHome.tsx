@@ -89,7 +89,7 @@ export function DashboardHome() {
             <div className="space-y-4">
               <div className="flex justify-between items-end">
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Authorized Tenants</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Authorized GSM Tenants</p>
                   <div className="text-3xl font-black tracking-tighter">
                     {isLoading ? <Skeleton className="h-8 w-12 inline-block" /> : profile?.tenantCount}
                     <span className="text-muted-foreground text-sm font-medium ml-1">/ {profile?.plan.tenantLimit || 1}</span>
@@ -113,7 +113,7 @@ export function DashboardHome() {
                   Array.from({ length: Math.min(3, profile.tenantCount) }).map((_, i) => (
                     <div key={i} className="flex items-center gap-2 text-[11px] font-bold text-foreground/80">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      <span className="flex-1 truncate uppercase tracking-tight">Tenant-0{i + 1} Authorized</span>
+                      <span className="flex-1 truncate uppercase tracking-tight">GSM Tenant-0{i + 1} Authorized</span>
                       <span className="text-[10px] font-black uppercase text-emerald-500/80">Active</span>
                     </div>
                   ))
