@@ -19,9 +19,18 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 export function ApiDocs() {
+  interface LicenseValidationResponse {
+    valid: boolean;
+    reason?: string;
+    details?: { id: string; name: string; status: string; authorizedAt: number };
+    timestamp: number;
+  }
+
+  type ValidationState = LicenseValidationResponse | { success: false; error: string } | null;
+
   const [testKey, setTestKey] = React.useState('');
   const [testDomain, setTestDomain] = React.useState('');
-  const [validationResult, setValidationResult] = React.useState<any>(null);
+  const [validationResult, setValidationResult] = React.useState<ValidationState>(null);
   const [isValidating, setIsValidating] = React.useState(false);
   const [copiedCode, setCopiedCode] = React.useState<string | null>(null);
   const handleTest = async () => {
@@ -32,7 +41,7 @@ export function ApiDocs() {
     setIsValidating(true);
     setValidationResult(null);
     try {
-      const res = await api('/api/validate-license', {
+      const res: LicenseValidationResponse = await api('/api/validate-license', {
         method: 'POST',
         body: JSON.stringify({ key: testKey, domain: testDomain })
       });
@@ -178,9 +187,11 @@ export function ApiDocs() {
                   {validationResult && (
                     <div className={cn(
                       "mt-6 p-5 rounded-2xl border text-xs font-mono transition-all animate-fade-in",
-                      validationResult.valid
-                        ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
-                        : 'bg-rose-500/10 border-rose-500/30 text-rose-600'
+                      'valid' in validationResult
+                        ? (validationResult.valid
+                            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
+                            : 'bg-rose-500/10 border-rose-500/30 text-rose-600')
+                        : 'bg-slate-500/10 border-slate-500/30 text-slate-600 dark:text-slate-400'
                     )}>
                       <p className="font-black uppercase tracking-widest mb-3 text-[10px]">Response Payload:</p>
                       <pre className="whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto scrollbar-thin">

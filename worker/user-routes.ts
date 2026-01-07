@@ -9,6 +9,9 @@ const MOCK_PLANS = [
 ];
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   const userId = 'admin-demo';
+  // HEALTH CHECK (TestBench vitals ping)
+  app.get('/api/health', (c) => ok(c, { status: 'healthy', timestamp: Date.now(), message: 'Worker API operational' }));
+  
   // ROOT / API DISCOVERY
   app.get('/api', (c) => ok(c, { message: "SaaS Engine API v2.0", status: "online" }));
   // PUBLIC LICENSE VALIDATION (Required for API Docs / Playground)
@@ -26,6 +29,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         });
       }
       const state = await itemInst.getState();
+      if (!state?.category) {
+        return ok(c, {
+          valid: false,
+          reason: 'License state corrupted or missing domain binding',
+          timestamp: Date.now()
+        });
+      }
       const isDomainMatch = state.category.toLowerCase() === domain.toLowerCase();
       if (!isDomainMatch) {
         return ok(c, { 
@@ -37,10 +47,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       return ok(c, {
         valid: true,
         details: {
-          id: state.id,
-          name: state.title,
-          status: state.status,
-          authorizedAt: state.createdAt
+          id: state.id || 'unknown',
+          name: state.title || 'Unnamed License',
+          status: state.status || 'active',
+          authorizedAt: state.createdAt || 0
         },
         timestamp: Date.now()
       });
@@ -65,7 +75,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     try {
       await ItemEntity.ensureSeed(c.env);
       const page = await ItemEntity.list(c.env);
-      const userItems = page.items.filter(i => i.ownerId === userId);
+      const userItems = (page.items || []).filter(i => i.ownerId === userId);
       return ok(c, { items: userItems, next: page.next });
     } catch (e) {
       return bad(c, 'Failed to fetch items');
@@ -157,10 +167,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       const users = await UserEntity.list(c.env);
       const items = await ItemEntity.list(c.env);
       const invoices = await InvoiceEntity.list(c.env);
-      const rev = invoices.items.reduce((acc, inv) => acc + inv.amount, 0);
+      const rev = (invoices.items || []).reduce((acc, inv) => acc + inv.amount, 0);
       return ok(c, {
-        userCount: users.items.length,
-        itemCount: items.items.length,
+        userCount: (users.items || []).length,
+        itemCount: (items.items || []).length,
         revenue: rev,
         health: 'Operational'
       });
@@ -171,7 +181,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/admin/users', async (c) => {
     try {
       const users = await UserEntity.list(c.env);
-      return ok(c, users.items);
+      return ok(c, users.items || []);
     } catch (e) {
       return bad(c, 'Failed to fetch operator registry');
     }
@@ -191,11 +201,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.get('/api/admin/tenants', async (c) => {
     try {
       const items = await ItemEntity.list(c.env);
-      const tenants = items.items.map(it => ({
+      const tenants = (items.items || []).map(it => ({
         id: it.id,
-        name: it.title,
-        domain: it.category.toLowerCase().includes('.') ? it.category : `${it.id.slice(0, 4)}.node.local`,
-        status: it.status,
+        name: it.title || 'Unnamed',
+        domain: (it.category || '').toLowerCase().includes('.') ? it.category : `${it.id.slice(0, 4)}.node.local`,
+        status: it.status || 'unknown',
         ownerId: it.ownerId,
         createdAt: it.createdAt
       }));
@@ -217,7 +227,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     try {
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
-      const items = (await ItemEntity.list(c.env)).items.filter(i => i.ownerId === userId);
+      const itemsPage = await ItemEntity.list(c.env);
+      const items = (itemsPage.items || []).filter(i => i.ownerId === userId);
       return ok(c, { profile, items, exportedAt: Date.now() });
     } catch (e) {
       return bad(c, 'Export failed');
