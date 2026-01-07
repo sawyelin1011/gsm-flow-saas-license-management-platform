@@ -11,7 +11,8 @@ import {
   Clock,
   ShieldAlert,
   Terminal,
-  ChevronRight
+  ChevronRight,
+  Search
 } from 'lucide-react';
 import {
   Card,
@@ -42,7 +43,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { api } from '@/lib/api-client';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -81,7 +81,7 @@ export function Support() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="relative w-full max-w-xs">
-           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
            <Input placeholder="Search technical docs..." className="pl-9 h-10 text-xs font-bold border-border/50 bg-background/50" />
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
@@ -127,12 +127,12 @@ export function Support() {
                       Intensity: {messageLength < 20 ? 'Low' : messageLength < 100 ? 'Standard' : 'High Quality'}
                     </span>
                   </div>
-                  <Textarea 
-                    name="message" 
+                  <Textarea
+                    name="message"
                     onChange={(e) => setMessageLength(e.target.value.length)}
-                    placeholder="Attach relevant node error logs and stack traces..." 
-                    className="min-h-[140px] text-xs font-medium resize-none bg-background/50 border-border/50 leading-relaxed" 
-                    required 
+                    placeholder="Attach relevant node error logs and stack traces..."
+                    className="min-h-[140px] text-xs font-medium resize-none bg-background/50 border-border/50 leading-relaxed"
+                    required
                   />
                 </div>
               </div>
@@ -228,22 +228,5 @@ export function Support() {
         </div>
       </div>
     </div>
-  );
-}
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg 
-      className={className} 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
   );
 }

@@ -112,7 +112,7 @@ export function DataGrid() {
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
-            <Button className="btn-gradient font-black h-10 text-xs px-6 uppercase tracking-widest shadow-glow">
+            <Button className="btn-gradient font-black h-10 text-xs px-6 uppercase tracking-widest shadow-glow hover:scale-[1.02] transition-transform">
               <Plus className="mr-2 h-4 w-4" /> Provision GSM Tenant
             </Button>
           </DialogTrigger>
@@ -152,7 +152,7 @@ export function DataGrid() {
         </Dialog>
       </div>
       <Card className="border-border/50 overflow-hidden shadow-soft">
-        <CardHeader className="border-b bg-muted/5 py-3 px-4">
+        <CardHeader className="border-b bg-muted/5 py-4 px-6">
           <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
             <Key className="w-3 h-3 text-primary" /> License Management Registry
           </CardTitle>
@@ -160,13 +160,13 @@ export function DataGrid() {
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-muted/30">
-              <TableRow className="hover:bg-transparent border-b">
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] pl-6 h-10">Tenant Identity</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] h-10">Service Domain</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] h-10 text-center">Status</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] h-10">Last Validated</TableHead>
-                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] h-10">Signed Key</TableHead>
-                <TableHead className="text-right pr-6 h-10"></TableHead>
+              <TableRow className="hover:bg-transparent border-b h-12">
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] pl-6">Tenant Identity</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em]">Service Domain</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em] text-center">Status</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em]">Last Validated</TableHead>
+                <TableHead className="text-[9px] font-black uppercase tracking-[0.15em]">Signed Key</TableHead>
+                <TableHead className="text-right pr-6"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -214,7 +214,7 @@ export function DataGrid() {
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-muted"><MoreHorizontal className="h-4 w-4" /></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48 glass">
-                          <DropdownMenuItem className="text-destructive font-black text-[10px] uppercase tracking-widest focus:bg-destructive/10" onClick={() => setDeletingId(tenant.id)}>
+                          <DropdownMenuItem className="text-destructive font-black text-[10px] uppercase tracking-widest focus:bg-destructive/10 cursor-pointer" onClick={() => setDeletingId(tenant.id)}>
                             <Trash2 className="mr-2 h-3.5 w-3.5" /> Decommission Node
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -242,7 +242,7 @@ export function DataGrid() {
             <AlertDialogCancel className="h-10 text-[10px] font-black uppercase tracking-widest rounded-lg border-border/50">Abort Mission</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletingId && deleteMutation.mutate(deletingId)}
-              className="h-10 text-[10px] font-black uppercase tracking-widest rounded-lg bg-destructive hover:bg-destructive/90 shadow-lg shadow-destructive/20"
+              className="h-10 text-[10px] font-black uppercase tracking-widest rounded-lg bg-destructive hover:bg-destructive/90 shadow-lg shadow-destructive/20 border-none"
             >
               Confirm Decommission
             </AlertDialogAction>

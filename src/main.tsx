@@ -12,7 +12,8 @@ import { ThemeProvider } from 'next-themes';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import '@/index.css';
-// Pages
+// Layouts & Pages
+import RootLayout from '@/components/layout/RootLayout';
 import { LandingPage } from '@/pages/LandingPage';
 import { Auth } from '@/pages/Auth';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
@@ -25,7 +26,6 @@ import { TestBench } from '@/pages/dashboard/TestBench';
 import { AdminDashboard } from '@/pages/admin/AdminDashboard';
 import { UserManagement } from '@/pages/admin/UserManagement';
 import { ApiDocs } from '@/pages/docs/ApiDocs';
-import { Toaster } from '@/components/ui/sonner';
 // Initialize Immer Map/Set support
 enableMapSet();
 const queryClient = new QueryClient({
@@ -37,18 +37,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-/**
- * Root Layout to provide global UI elements within the Router context.
- * This ensures hooks like useNavigate (used by Toaster or other components) work correctly.
- */
-function RootLayout() {
-  return (
-    <>
-      <Outlet />
-      <Toaster richColors closeButton position="top-right" />
-    </>
-  );
-}
 const router = createBrowserRouter([
   {
     path: "/",
