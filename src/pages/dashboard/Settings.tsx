@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { cn } from "@/lib/utils";
@@ -61,7 +63,7 @@ export function Settings() {
     }
   };
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
       <div className="space-y-1 mb-8">
         <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Node Configuration</h1>
         <p className="text-sm text-muted-foreground font-medium">Manage your operator identity and security parameters.</p>

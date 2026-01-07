@@ -21,17 +21,27 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/tenants', async (c) => {
     try {
       const { name, domain } = await c.req.json();
-      if (!name || name.length < 2) return bad(c, 'Identifier too short');
+      if (!name || name.trim().length < 2) return bad(c, 'Identifier too short (min 2 chars)');
       if (!domain || !domain.includes('.')) return bad(c, 'Valid FQDN domain required');
+      const normalizedDomain = domain.toLowerCase().trim();
+      // Check for duplicates in the current registry
+      const allTenants = await TenantEntity.list(c.env);
+      const isDuplicate = allTenants.items.some(t => t.domain.toLowerCase() === normalizedDomain);
+      if (isDuplicate) return bad(c, `Configuration conflict: Domain ${normalizedDomain} is already registered`);
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
       if (profile.tenantCount >= profile.plan.tenantLimit) {
-        return bad(c, `Registry capacity reached (${profile.plan.tenantLimit} nodes max)`);
+        return bad(c, `Registry capacity reached (${profile.plan.tenantLimit} nodes max per current tier)`);
       }
-      const tenant = await TenantEntity.createForUser(c.env, { name, domain, ownerId: userId });
+      const tenant = await TenantEntity.createForUser(c.env, { 
+        name: name.trim(), 
+        domain: normalizedDomain, 
+        ownerId: userId 
+      });
       return ok(c, tenant);
     } catch (e) {
-      return bad(c, 'Failed to provision tenant');
+      console.error('[API] Provisioning Error:', e);
+      return bad(c, 'Failed to provision tenant entity on authority node');
     }
   });
   app.delete('/api/tenants/:id', async (c) => {
@@ -46,12 +56,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       if (!key || !domain) return bad(c, 'Key and Domain target are required for signal verification');
       const tenantsPage = await TenantEntity.list(c.env);
       const tenant = tenantsPage.items.find(t => t.license.key === key);
-      if (!tenant) return ok(c, { valid: false, reason: 'Registry Mismatch: License key not found', timestamp: Date.now() });
+      if (!tenant) return ok(c, { valid: false, reason: 'Registry Mismatch: License key not found in authority database', timestamp: Date.now() });
       if (tenant.status !== 'active') return ok(c, { valid: false, reason: `Status Exception: License is currently ${tenant.status}`, timestamp: Date.now() });
       const normalizedTarget = domain.toLowerCase().trim();
       const normalizedBound = tenant.domain.toLowerCase().trim();
       if (normalizedTarget !== normalizedBound) {
-        return ok(c, { valid: false, reason: 'Authority Mismatch: Node not authorized for this domain target', timestamp: Date.now() });
+        return ok(c, { 
+          valid: false, 
+          reason: 'Authority Mismatch: This license key is strictly bound to a different domain target', 
+          details: { boundDomain: tenant.domain },
+          timestamp: Date.now() 
+        });
       }
       return ok(c, {
         valid: true,
@@ -59,7 +74,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         timestamp: Date.now()
       });
     } catch (e) {
-      return bad(c, 'Authority node internal error');
+      console.error('[API] Validation Error:', e);
+      return bad(c, 'Authority node internal communication error');
     }
   });
   // Support
