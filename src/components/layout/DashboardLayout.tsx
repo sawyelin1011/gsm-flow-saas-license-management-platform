@@ -12,7 +12,8 @@ import {
   HelpCircle,
   BarChart3,
   Users,
-  BookOpen
+  BookOpen,
+  Key
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -40,15 +41,15 @@ interface NavItem {
   href: string;
 }
 const MENU_ITEMS: NavItem[] = [
-  { title: 'Console', icon: LayoutDashboard, href: '/dashboard' },
-  { title: 'Registry', icon: List, href: '/dashboard/data' },
+  { title: 'Tenant Registry', icon: LayoutDashboard, href: '/dashboard' },
+  { title: 'License Management', icon: Key, href: '/dashboard/data' },
   { title: 'Test Bench', icon: Play, href: '/dashboard/test' },
   { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
   { title: 'Support', icon: HelpCircle, href: '/dashboard/support' },
   { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
 ];
 const ADMIN_ITEMS: NavItem[] = [
-  { title: 'System Overview', icon: BarChart3, href: '/dashboard/admin' },
+  { title: 'Admin Dashboard', icon: BarChart3, href: '/dashboard/admin' },
   { title: 'Operator Mgmt', icon: Users, href: '/dashboard/admin/users' },
   { title: 'Technical Docs', icon: BookOpen, href: '/docs' },
 ];
@@ -137,7 +138,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
-  const isAdmin = React.useMemo(() =>
+  const isAdmin = React.useMemo(() => 
     profile?.id === 'admin-demo' || profile?.email?.toLowerCase().includes('admin'),
     [profile]
   );
@@ -146,8 +147,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     const item = allItems.find(i => i.href === pathname);
     if (item) return item.title;
     if (pathname.startsWith('/dashboard/admin/users')) return 'Operator Mgmt';
-    if (pathname.startsWith('/dashboard/admin')) return 'System Overview';
-    return 'Core Console';
+    if (pathname.startsWith('/dashboard/admin')) return 'Admin Dashboard';
+    return 'Authority Console';
   }, [pathname]);
   const handleLogout = React.useCallback(() => {
     window.location.replace('/');
@@ -170,7 +171,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
               <Zap className="w-5 h-5 text-primary shrink-0" />
               <span className="font-black text-xs uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">
-                SaaS Engine
+                GSM Authority
               </span>
             </SidebarHeader>
             <SidebarContent className="p-2">
@@ -202,7 +203,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 <>
                   <SidebarSeparator className="my-4 mx-2" />
                   <div className="px-4 mb-2 group-data-[collapsible=icon]:hidden">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Authority</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Control Center</p>
                   </div>
                   <SidebarMenu>
                     {ADMIN_ITEMS.map((item) => (

@@ -2,17 +2,16 @@ import { Hono } from "hono";
 import type { Env } from './core-utils';
 import { UserEntity, TenantEntity, SupportTicketEntity, InvoiceEntity } from "./entities";
 import { ok, bad, notFound } from './core-utils';
-import { MOCK_PLANS } from "@shared/mock-data";
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   const userId = 'admin-demo';
-  app.get('/api/health', (c) => ok(c, { status: 'healthy', timestamp: Date.now(), message: 'GSM Flow API operational' }));
+  app.get('/api/health', (c) => ok(c, { status: 'healthy', timestamp: Date.now(), message: 'GSM Flow Authority Node Operational' }));
   // Profile
   app.get('/api/me', async (c) => {
     const user = new UserEntity(c.env, userId);
     if (!await user.exists()) await UserEntity.ensureSeed(c.env);
     return ok(c, await user.getProfile(c.env));
   });
-  // Tenants & Licensing
+  // Tenant & License Management
   app.get('/api/tenants', async (c) => {
     const page = await TenantEntity.list(c.env);
     const userTenants = (page.items || []).filter(t => t.ownerId === userId);
@@ -21,27 +20,26 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/tenants', async (c) => {
     try {
       const { name, domain } = await c.req.json();
-      if (!name || name.trim().length < 2) return bad(c, 'Identifier too short (min 2 chars)');
-      if (!domain || !domain.includes('.')) return bad(c, 'Valid FQDN domain required');
+      if (!name || name.trim().length < 2) return bad(c, 'Tenant identity too short');
+      if (!domain || !domain.includes('.')) return bad(c, 'Valid service domain required');
       const normalizedDomain = domain.toLowerCase().trim();
-      // Check for duplicates in the current registry
       const allTenants = await TenantEntity.list(c.env);
       const isDuplicate = allTenants.items.some(t => t.domain.toLowerCase() === normalizedDomain);
-      if (isDuplicate) return bad(c, `Configuration conflict: Domain ${normalizedDomain} is already registered`);
+      if (isDuplicate) return bad(c, `Conflict: Domain ${normalizedDomain} is already provisioned in the registry`);
       const user = new UserEntity(c.env, userId);
       const profile = await user.getProfile(c.env);
       if (profile.tenantCount >= profile.plan.tenantLimit) {
-        return bad(c, `Registry capacity reached (${profile.plan.tenantLimit} nodes max per current tier)`);
+        return bad(c, `Authority limit reached: Upgrade to Growth/Agency plan to provision more GSM Tenants`);
       }
-      const tenant = await TenantEntity.createForUser(c.env, { 
-        name: name.trim(), 
-        domain: normalizedDomain, 
-        ownerId: userId 
+      const tenant = await TenantEntity.createForUser(c.env, {
+        name: name.trim(),
+        domain: normalizedDomain,
+        ownerId: userId
       });
       return ok(c, tenant);
     } catch (e) {
       console.error('[API] Provisioning Error:', e);
-      return bad(c, 'Failed to provision tenant entity on authority node');
+      return bad(c, 'Authority node failed to provision tenant record');
     }
   });
   app.delete('/api/tenants/:id', async (c) => {
@@ -49,23 +47,22 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const deleted = await TenantEntity.delete(c.env, id);
     return ok(c, { id, deleted });
   });
-  // License Validation Gateway (Public-facing simulation)
+  // Service Authorization Gateway
   app.post('/api/validate-license', async (c) => {
     try {
       const { key, domain } = await c.req.json();
-      if (!key || !domain) return bad(c, 'Key and Domain target are required for signal verification');
+      if (!key || !domain) return bad(c, 'License key and Domain target are required for service authorization');
       const tenantsPage = await TenantEntity.list(c.env);
       const tenant = tenantsPage.items.find(t => t.license.key === key);
-      if (!tenant) return ok(c, { valid: false, reason: 'Registry Mismatch: License key not found in authority database', timestamp: Date.now() });
-      if (tenant.status !== 'active') return ok(c, { valid: false, reason: `Status Exception: License is currently ${tenant.status}`, timestamp: Date.now() });
+      if (!tenant) return ok(c, { valid: false, reason: 'Invalid license key: Record not found in authority database', timestamp: Date.now() });
+      if (tenant.status !== 'active') return ok(c, { valid: false, reason: `License suspended: Status is currently ${tenant.status}`, timestamp: Date.now() });
       const normalizedTarget = domain.toLowerCase().trim();
       const normalizedBound = tenant.domain.toLowerCase().trim();
       if (normalizedTarget !== normalizedBound) {
-        return ok(c, { 
-          valid: false, 
-          reason: 'Authority Mismatch: This license key is strictly bound to a different domain target', 
-          details: { boundDomain: tenant.domain },
-          timestamp: Date.now() 
+        return ok(c, {
+          valid: false,
+          reason: 'Domain mismatch: This license key is strictly bound to a different service target',
+          timestamp: Date.now()
         });
       }
       return ok(c, {
@@ -74,11 +71,10 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         timestamp: Date.now()
       });
     } catch (e) {
-      console.error('[API] Validation Error:', e);
-      return bad(c, 'Authority node internal communication error');
+      return bad(c, 'Authority node communication exception');
     }
   });
-  // Support
+  // Support & Billing
   app.get('/api/support', async (c) => {
     const tickets = await SupportTicketEntity.getTicketsByUser(c.env, userId);
     return ok(c, tickets);
@@ -96,7 +92,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     return ok(c, ticket);
   });
-  // Billing
   app.get('/api/billing/invoices', async (c) => {
     const invoices = await InvoiceEntity.getInvoicesByUser(c.env, userId);
     return ok(c, invoices);

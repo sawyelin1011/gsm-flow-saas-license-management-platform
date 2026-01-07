@@ -1,48 +1,65 @@
 import type { AppUser, Plan, Tenant, Invoice, SupportTicket } from './types';
 export const MOCK_PLANS: Plan[] = [
   {
-    id: 'basic',
-    name: 'Node Starter',
-    price: 29,
+    id: 'launch',
+    name: 'Launch Plan',
+    price: 49,
     interval: 'month',
     tenantLimit: 1,
-    features: ['1 Managed Node', 'Domain Binding', 'Standard Support', 'Real-time Validation']
+    features: [
+      '1 GSM Tenant Provisioning',
+      'Remote Service Management',
+      'Standard Support',
+      'Real-time License Validation'
+    ]
   },
   {
-    id: 'pro',
-    name: 'Cluster Pro',
-    price: 89,
+    id: 'growth',
+    name: 'Growth Plan',
+    price: 149,
     interval: 'month',
     tenantLimit: 10,
-    features: ['10 Managed Nodes', 'Priority Support', 'Advanced Analytics', 'API Access', 'Global Edge Validation']
+    features: [
+      '10 GSM Tenants',
+      'Priority Authority Support',
+      'Automated Service Updates',
+      'Advanced API Analytics',
+      'Global Edge Validation'
+    ]
   },
   {
-    id: 'enterprise',
-    name: 'Carrier Enterprise',
-    price: 299,
+    id: 'agency',
+    name: 'Agency Plan',
+    price: 499,
     interval: 'month',
     tenantLimit: 100,
-    features: ['Unlimited Nodes', '24/7 Dedicated Support', 'SLA Guarantee', 'Custom Integrations', 'White-labeling']
+    features: [
+      '100 GSM Tenants',
+      'White-label Service Portal',
+      '24/7 Dedicated Support',
+      'Custom Integration Hooks',
+      'SLA Guarantee'
+    ]
   }
 ];
 export const MOCK_USERS: AppUser[] = [
   {
     id: 'admin-demo',
-    name: 'Demo Admin',
+    name: 'Demo Operator',
     email: 'admin@gsmflow.com',
-    planId: 'pro'
+    planId: 'growth'
   }
 ];
 export const MOCK_TENANTS: Tenant[] = [
   {
     id: 'tenant-1',
-    name: 'Primary Cluster',
-    domain: 'gsm.primary.local',
+    name: 'London Central Service',
+    domain: 'gsm.london.service',
     status: 'active',
     license: {
-      key: 'FLOW-ABCD-1234-EFGH',
+      key: 'FLOW-GSM-8822-XJ99',
       issuedAt: Date.now() - 86400000 * 5,
-      signature: 'sig_a1b2c3d4'
+      signature: 'sig_gsm_a1b2'
     },
     ownerId: 'admin-demo',
     createdAt: Date.now() - 86400000 * 5
@@ -50,12 +67,12 @@ export const MOCK_TENANTS: Tenant[] = [
 ];
 export const MOCK_INVOICES: Invoice[] = [
   {
-    id: 'inv-2025-001',
+    id: 'inv-2025-gsm-001',
     userId: 'admin-demo',
-    amount: 89,
+    amount: 149,
     date: Date.now() - 86400000 * 10,
     status: 'paid',
-    planName: 'Cluster Pro',
+    planName: 'Growth Plan',
     currency: 'USD'
   }
 ];
@@ -63,8 +80,8 @@ export const MOCK_TICKETS: SupportTicket[] = [
   {
     id: 'tick-001',
     userId: 'admin-demo',
-    subject: 'Initial Cluster Sync',
-    message: 'Probing the authority node for the first time. Latency looks excellent.',
+    subject: 'Tenant Provisioning Latency',
+    message: 'Investigating response times for new service license generation in Southeast Asia.',
     status: 'closed',
     category: 'technical',
     createdAt: Date.now() - 86400000 * 2

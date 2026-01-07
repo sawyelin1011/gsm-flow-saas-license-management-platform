@@ -7,10 +7,10 @@ import {
   ArrowRight,
   CheckCircle2,
   Lock,
+  LayoutDashboard,
+  RefreshCw,
   Server,
-  Code2,
-  Cpu,
-  BarChart3
+  Code2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -18,10 +18,13 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 export function LandingPage() {
   const plans = [
-    { id: 'basic', name: 'Node Starter', price: 29, features: ['1 Managed Node', 'Domain Binding', 'Standard Support', 'Real-time Validation'] },
-    { id: 'pro', name: 'Cluster Pro', price: 89, features: ['10 Managed Nodes', 'Priority Support', 'Advanced Analytics', 'API Access', 'Global Edge Validation'] },
-    { id: 'enterprise', name: 'Carrier Enterprise', price: 299, features: ['Unlimited Nodes', '24/7 Dedicated Support', 'SLA Guarantee', 'Custom Integrations', 'White-labeling'] }
+    { id: 'launch', name: 'Launch Plan', price: 49, features: ['1 GSM Tenant Provisioning', 'Remote Service Management', 'Standard Support', 'Real-time License Validation'] },
+    { id: 'growth', name: 'Growth Plan', price: 149, features: ['10 GSM Tenants', 'Priority Authority Support', 'Automated Service Updates', 'Advanced API Analytics', 'Global Edge Validation'] },
+    { id: 'agency', name: 'Agency Plan', price: 499, features: ['100 GSM Tenants', 'White-label Service Portal', '24/7 Dedicated Support', 'Custom Integration Hooks', 'SLA Guarantee'] }
   ];
+  const scrollToPricing = () => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  };
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <ThemeToggle />
@@ -33,86 +36,77 @@ export function LandingPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-[10px] font-black border border-primary/20 tracking-[0.2em] uppercase"
           >
-            <Zap className="w-3.5 h-3.5 fill-current" />
-            <span>The Ultimate Licensing Authority for GSM Systems</span>
+            <ShieldCheck className="w-3.5 h-3.5 fill-current" />
+            <span>The Premier GSM Service Licensing Authority</span>
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9]"
           >
-            Secure Your <br />
-            <span className="text-gradient">GSM Clusters</span>
+            Launch Your Own <br />
+            <span className="text-gradient">GSM Platform</span>
           </motion.h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium">
-            Deploy self-hosted GSM service systems with absolute authority. Issue cryptographically signed license keys and verify node integrity globally in milliseconds.
+            Take absolute authority over your GSM service clusters. Issue cryptographically signed licenses, provision tenants, and manage global installations with ease.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Button size="lg" className="btn-gradient rounded-full px-10 h-14 text-lg font-black shadow-glow" asChild>
-              <Link to="/login">Start Issuing <ArrowRight className="ml-2 w-5 h-5" /></Link>
+              <Link to="/login">Start License <ArrowRight className="ml-2 w-5 h-5" /></Link>
             </Button>
-            <Button variant="outline" size="lg" className="rounded-full px-10 h-14 text-lg font-bold" asChild>
-              <Link to="/docs">Protocol Docs</Link>
+            <Button variant="outline" size="lg" className="rounded-full px-10 h-14 text-lg font-bold" onClick={scrollToPricing}>
+              View Pricing
             </Button>
-          </div>
-        </section>
-        {/* Features Section */}
-        <section className="py-24 border-t border-border/50">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <FeatureCard 
-              icon={<Lock className="w-8 h-8" />}
-              title="Cryptographic Keys"
-              description="Signed license keys that bind installations to specific hardware or domains."
-            />
-            <FeatureCard 
-              icon={<Globe className="w-8 h-8" />}
-              title="Domain Binding"
-              description="Strict target verification prevents unauthorized node replication or domain spoofing."
-            />
-            <FeatureCard 
-              icon={<Zap className="w-8 h-8" />}
-              title="Edge Validation"
-              description="Cloudflare Worker backed API ensures <50ms validation latency worldwide."
-            />
           </div>
         </section>
         {/* Workflow Section */}
-        <section className="py-24 bg-muted/30 rounded-[3rem] p-12 mb-24">
+        <section className="py-24 bg-muted/30 rounded-[3rem] p-12 mb-24 border border-border/50">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-black mb-4">How it Works</h2>
-            <p className="text-muted-foreground">Three steps to global service authority.</p>
+            <h2 className="text-4xl font-black mb-4">The Authority Protocol</h2>
+            <p className="text-muted-foreground">Complete control from provisioning to validation.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 text-center">
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">1</div>
-              <h3 className="font-bold text-lg uppercase tracking-tight">Connect Node</h3>
-              <p className="text-sm text-muted-foreground">Register your self-hosted GSM cluster in our registry with its target domain.</p>
-            </div>
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">2</div>
-              <h3 className="font-bold text-lg uppercase tracking-tight">Issue Key</h3>
-              <p className="text-sm text-muted-foreground">System generates a unique, cryptographically signed license key for that specific node.</p>
-            </div>
-            <div className="space-y-4">
-              <div className="w-16 h-16 bg-primary text-white rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">3</div>
-              <h3 className="font-bold text-lg uppercase tracking-tight">Global Validation</h3>
-              <p className="text-sm text-muted-foreground">Your nodes poll our edge API to verify validity and subscription status in real-time.</p>
-            </div>
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            <WorkflowItem icon={<Lock />} title="License Management" desc="Generate unique, cryptographically secure keys for every installation." />
+            <WorkflowItem icon={<Server />} title="Tenant Provisioning" desc="Onboard new service clusters with automated domain binding." />
+            <WorkflowItem icon={<LayoutDashboard />} title="Operator Portal" desc="Manage subscriptions and monitor global fleet health from one console." />
+            <WorkflowItem icon={<RefreshCw />} title="Real-time Updates" desc="Push critical service updates and manage node states remotely." />
           </div>
         </section>
+        {/* Features Section */}
+        <section className="py-24 border-t border-border/50 grid grid-cols-1 md:grid-cols-3 gap-12">
+          <FeatureCard
+            icon={<Globe className="w-8 h-8" />}
+            title="Global Edge Validation"
+            description="Our authority nodes respond in <30ms globally, ensuring your GSM services stay online without interruption."
+          />
+          <FeatureCard
+            icon={<ShieldCheck className="w-8 h-8" />}
+            title="Sovereign Control"
+            description="You own the registry. Revoke, suspend, or upgrade service licenses instantly with a single click."
+          />
+          <FeatureCard
+            icon={<Code2 className="w-8 h-8" />}
+            title="SDK Integration"
+            description="Drop-in authorization libraries for Go, Python, and Node.js to secure your GSM server logic."
+          />
+        </section>
         {/* Pricing Section */}
-        <section className="py-24">
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <section id="pricing" className="py-24">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-black tracking-tighter mb-4 uppercase">Strategic Plans</h2>
+            <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">Scale your GSM service empire on your terms</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {plans.map((plan) => (
               <div key={plan.id} className={cn(
                 "p-8 rounded-3xl border transition-all duration-500 flex flex-col justify-between",
-                plan.id === 'pro' ? "border-primary shadow-glow scale-105 bg-card" : "border-border bg-card/50"
+                plan.id === 'growth' ? "border-primary shadow-glow scale-105 bg-card z-10" : "border-border bg-card/50"
               )}>
                 <div>
-                  <h3 className="text-xl font-bold mb-1">{plan.name}</h3>
+                  <h3 className="text-xl font-bold mb-1 uppercase tracking-tight">{plan.name}</h3>
                   <div className="flex items-baseline gap-1 mb-6">
                     <span className="text-4xl font-black text-primary">${plan.price}</span>
-                    <span className="text-muted-foreground text-sm">/mo</span>
+                    <span className="text-muted-foreground text-sm font-bold uppercase">/mo</span>
                   </div>
                   <ul className="space-y-4 mb-8">
                     {plan.features.map((f) => (
@@ -123,8 +117,8 @@ export function LandingPage() {
                     ))}
                   </ul>
                 </div>
-                <Button className={cn("w-full h-12 font-bold rounded-xl", plan.id === 'pro' ? 'btn-gradient' : '')} variant={plan.id === 'pro' ? 'default' : 'outline'} asChild>
-                  <Link to="/login">Select Plan</Link>
+                <Button className={cn("w-full h-12 font-bold rounded-xl", plan.id === 'growth' ? 'btn-gradient' : '')} variant={plan.id === 'growth' ? 'default' : 'outline'} asChild>
+                  <Link to="/login">Select {plan.name.split(' ')[0]}</Link>
                 </Button>
               </div>
             ))}
@@ -134,6 +128,17 @@ export function LandingPage() {
           © {new Date().getFullYear()} GSM Flow Licensing Authority · All Rights Reserved.
         </footer>
       </div>
+    </div>
+  );
+}
+function WorkflowItem({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+  return (
+    <div className="space-y-4">
+      <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto text-2xl font-black border border-primary/20">
+        {icon}
+      </div>
+      <h3 className="font-bold text-sm uppercase tracking-tight">{title}</h3>
+      <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
     </div>
   );
 }
