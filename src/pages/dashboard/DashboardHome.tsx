@@ -7,7 +7,8 @@ import {
   TrendingUp,
   ShieldCheck,
   ArrowRight,
-  Plus
+  Plus,
+  Target
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -44,26 +45,26 @@ export function DashboardHome() {
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Tenant Registry Overview</h1>
-            <p className="text-sm text-muted-foreground font-medium uppercase tracking-tight opacity-70">Sovereign Authority Console</p>
+            <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Sovereign Authority Console</h1>
+            <p className="text-sm text-muted-foreground font-medium uppercase tracking-tight opacity-70">Unlocking Platform Oversight</p>
           </div>
           <Button className="btn-gradient font-black h-11 text-[10px] uppercase tracking-widest px-8 shadow-glow" asChild>
-            <Link to="/dashboard/data"><Plus className="w-4 h-4 mr-2" /> New GSM Tenant</Link>
+            <Link to="/dashboard/data"><Plus className="w-4 h-4 mr-2" /> Provision New Platform</Link>
           </Button>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Active Tenants" value={profile?.tenantCount?.toString() || "0"} icon={<Server className="w-4 h-4" />} trend="Operational" />
-          <StatCard title="GSM Service Pings" value="24.8k" icon={<Zap className="w-4 h-4" />} trend="+18% (24h)" />
-          <StatCard title="Edge Latency" value="19ms" icon={<Activity className="w-4 h-4" />} trend="Global Node" />
-          <StatCard title="Auth Uptime" value="100%" icon={<TrendingUp className="w-4 h-4" />} trend="Stable" />
+          <StatCard title="Platform Nodes" value={profile?.tenantCount?.toString() || "0"} icon={<Server className="w-4 h-4" />} trend="Operational" />
+          <StatCard title="Service Traffic" value="24.8k" icon={<Zap className="w-4 h-4" />} trend="+18% (24h)" />
+          <StatCard title="Global Latency" value="19ms" icon={<Activity className="w-4 h-4" />} trend="Edge Stable" />
+          <StatCard title="Sovereign Uptime" value="100%" icon={<ShieldCheck className="w-4 h-4" />} trend="Nominal" />
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <Card className="xl:col-span-2 border-border/50 shadow-soft">
             <CardHeader className="border-b bg-muted/5 py-4 px-6 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5 text-primary" /> GSM License Traffic Throughput
+                <Target className="w-3.5 h-3.5 text-primary" /> Authority Sales Throughput
               </CardTitle>
-              <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/20 bg-primary/5">Live Stream</Badge>
+              <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/20 bg-primary/5">Real-time Node Pulse</Badge>
             </CardHeader>
             <CardContent className="pt-8 px-6">
               <div className="h-[300px] w-full">
@@ -93,7 +94,7 @@ export function DashboardHome() {
               <div className="space-y-4">
                 <div className="flex justify-between items-end">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Authorized GSM Tenants</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Provisioned Nodes</p>
                     <div className="text-4xl font-black tracking-tighter">
                       {isLoading ? <Skeleton className="h-8 w-12 inline-block" /> : profile?.tenantCount}
                       <span className="text-muted-foreground text-sm font-medium ml-1">/ {profile?.plan.tenantLimit || 1}</span>
@@ -111,25 +112,25 @@ export function DashboardHome() {
                 </div>
               </div>
               <div className="space-y-4">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Service Authority Pulse</h4>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Node Pulse Stream</h4>
                 <div className="space-y-3">
                   {profile?.tenantCount && profile.tenantCount > 0 ? (
                     Array.from({ length: Math.min(3, profile.tenantCount) }).map((_, i) => (
                       <div key={i} className="flex items-center gap-3 text-xs font-bold text-foreground group">
                         <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span className="flex-1 truncate uppercase tracking-tighter group-hover:text-primary transition-colors">GSM TENANT-0{i + 1} AUTHORIZED</span>
-                        <Badge variant="outline" className="text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5 px-1.5 h-4">ACTIVE</Badge>
+                        <span className="flex-1 truncate uppercase tracking-tighter group-hover:text-primary transition-colors">SOVEREIGN NODE-0{i + 1}</span>
+                        <Badge variant="outline" className="text-[8px] font-black uppercase text-emerald-500 border-emerald-500/20 bg-emerald-500/5 px-1.5 h-4">STABLE</Badge>
                       </div>
                     ))
                   ) : (
                     <div className="py-8 text-center text-[10px] font-bold text-muted-foreground uppercase italic tracking-widest opacity-30 border border-dashed rounded-xl">
-                      No active tenants in registry
+                      Registry Empty
                     </div>
                   )}
                 </div>
               </div>
               <Button className="w-full btn-gradient h-12 font-black text-[10px] uppercase tracking-widest mt-4 shadow-glow" asChild>
-                <Link to="/dashboard/data">View Master Registry <ArrowRight className="ml-2 w-4 h-4" /></Link>
+                <Link to="/dashboard/data">Manage All Nodes <ArrowRight className="ml-2 w-4 h-4" /></Link>
               </Button>
             </CardContent>
           </Card>

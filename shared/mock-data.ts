@@ -7,10 +7,11 @@ export const MOCK_PLANS: Plan[] = [
     interval: 'month',
     tenantLimit: 1,
     features: [
-      '1 GSM Tenant Provisioning',
-      'Remote Service Management',
-      'Standard Support',
-      'Real-time License Validation'
+      '1 Sovereign Service Node',
+      'Custom Domain Unlocking Portal',
+      'Remote Service Authority',
+      'Zero Transaction Fees',
+      'Standard Support'
     ]
   },
   {
@@ -20,11 +21,11 @@ export const MOCK_PLANS: Plan[] = [
     interval: 'month',
     tenantLimit: 10,
     features: [
-      '10 GSM Tenants',
-      'Priority Authority Support',
-      'Automated Service Updates',
-      'Advanced API Analytics',
-      'Global Edge Validation'
+      '10 Sovereign Service Nodes',
+      'Automated API Gateway',
+      'White-labeled Operator Portal',
+      'Advanced Node Analytics',
+      'Priority Support'
     ]
   },
   {
@@ -34,32 +35,32 @@ export const MOCK_PLANS: Plan[] = [
     interval: 'month',
     tenantLimit: 100,
     features: [
-      '100 GSM Tenants',
-      'White-label Service Portal',
-      '24/7 Dedicated Support',
+      '100 Sovereign Service Nodes',
+      'Wholesale API Handshakes',
       'Custom Integration Hooks',
-      'SLA Guarantee'
+      'Dedicated Authority Engineer',
+      'Full SLA Guarantee'
     ]
   }
 ];
 export const MOCK_USERS: AppUser[] = [
   {
     id: 'admin-demo',
-    name: 'Demo Operator',
+    name: 'Global Authority Admin',
     email: 'admin@gsmflow.com',
-    planId: 'growth'
+    planId: 'agency'
   }
 ];
 export const MOCK_TENANTS: Tenant[] = [
   {
-    id: 'tenant-1',
-    name: 'London Central Service',
-    domain: 'gsm.london.service',
+    id: 'node-1',
+    name: 'Sovereign Cluster Alpha',
+    domain: 'unlock.alpha.local',
     status: 'active',
     license: {
-      key: 'FLOW-GSM-8822-XJ99',
+      key: 'FLOW-SOV-8822-XJ99',
       issuedAt: Date.now() - 86400000 * 5,
-      signature: 'sig_gsm_a1b2'
+      signature: 'sig_gsm_sov_a1b2'
     },
     ownerId: 'admin-demo',
     createdAt: Date.now() - 86400000 * 5
@@ -67,7 +68,7 @@ export const MOCK_TENANTS: Tenant[] = [
 ];
 export const MOCK_INVOICES: Invoice[] = [
   {
-    id: 'inv-2025-gsm-001',
+    id: 'inv-2025-sov-001',
     userId: 'admin-demo',
     amount: 149,
     date: Date.now() - 86400000 * 10,
@@ -80,8 +81,8 @@ export const MOCK_TICKETS: SupportTicket[] = [
   {
     id: 'tick-001',
     userId: 'admin-demo',
-    subject: 'Tenant Provisioning Latency',
-    message: 'Investigating response times for new service license generation in Southeast Asia.',
+    subject: 'Sovereign Node Latency Audit',
+    message: 'Investigating edge validation speeds in Southeast Asian clusters.',
     status: 'closed',
     category: 'technical',
     createdAt: Date.now() - 86400000 * 2

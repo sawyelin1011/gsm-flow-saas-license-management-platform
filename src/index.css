@@ -65,6 +65,7 @@
     @apply bg-background text-foreground antialiased overflow-x-hidden selection:bg-primary/20 selection:text-primary;
     min-width: 320px;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    line-height: 1.6;
   }
 }
 @layer components {
@@ -81,28 +82,21 @@
   .glass {
     @apply bg-background/50 backdrop-blur-md border border-border/50 shadow-soft;
   }
-  .dashboard-content {
-    @apply w-full max-w-full mx-auto space-y-8;
+  .bg-motion-lines {
+    background-image: repeating-linear-gradient(45deg, hsl(var(--primary) / 0.03) 0px, hsl(var(--primary) / 0.03) 1px, transparent 1px, transparent 10px);
   }
-  .text-dashboard-title {
-    @apply text-lg md:text-2xl font-black uppercase tracking-tight;
+  .bg-grid-cyan {
+    background-image: 
+      linear-gradient(to right, hsl(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
-  .card-tech {
-    @apply border-border/50 bg-card shadow-sm hover:border-primary/50 transition-colors;
+  .shadow-soft {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0% 0% / 0.05);
   }
-}
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-.floating {
-  animation: float 3s ease-in-out infinite;
-}
-.shadow-soft {
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-}
-.animate-fade-in {
-  animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  .animate-fade-in {
+    animation: fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
