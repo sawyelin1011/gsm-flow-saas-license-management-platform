@@ -1,34 +1,39 @@
 import { IndexedEntity } from "./core-utils";
-import type { AppUser, Tenant, UserProfile, SupportTicket, Invoice, Plan } from "@shared/types";
-export class UserEntity extends IndexedEntity<AppUser> {
+import type { AppUser, Tenant, UserProfile, SupportTicket, Invoice, Plan, SessionInfo } from "@shared/types";
+export class UserEntity extends IndexedEntity<AppUser & { passwordHash: string }> {
   static readonly entityName = "user";
   static readonly indexName = "users";
-  static readonly initialState: AppUser = { id: "", name: "", email: "", planId: "launch" };
-  static readonly seedData: AppUser[] = [{id: 'admin-demo', name: 'GSM Authority Admin', email: 'admin@gsmflow.com', planId: 'growth'}];
+  static readonly initialState = { id: "", name: "", email: "", planId: "launch", passwordHash: "" };
   async getProfile(env: any): Promise<UserProfile> {
     const state = await this.getState();
     const MOCK_PLANS: Plan[] = [
-      {id: 'launch', name: 'Launch', tenantLimit: 1, price: 49, interval: 'month', features: []},
-      {id: 'growth', name: 'Growth', tenantLimit: 10, price: 149, interval: 'month', features: ['Priority support']},
-      {id: 'agency', name: 'Agency', tenantLimit: 100, price: 499, interval: 'month', features: ['White-label', 'Early access']}
+      { id: 'launch', name: 'Launch', tenantLimit: 1, price: 49, interval: 'month', features: ['Basic Support'] },
+      { id: 'growth', name: 'Growth', tenantLimit: 10, price: 149, interval: 'month', features: ['Priority support'] },
+      { id: 'agency', name: 'Agency', tenantLimit: 100, price: 499, interval: 'month', features: ['White-label', 'Early access'] }
     ];
     const plan = MOCK_PLANS.find(p => p.id === state.planId) || MOCK_PLANS[0];
-    const tenants = await TenantEntity.list(env);
-    const userTenants = (tenants.items || []).filter(t => t.ownerId === this.id);
+    const tenantsResult = await TenantEntity.list(env);
+    const userTenants = (tenantsResult.items || []).filter(t => t.ownerId === this.id);
     return {
-      ...state,
+      id: state.id,
+      name: state.name,
+      email: state.email,
+      planId: state.planId,
       plan,
       tenantCount: userTenants.length
     };
   }
-  static async ensureSeed(env: any): Promise<void> {
-    const result = await this.list(env);
-    if (!result.items || result.items.length === 0) {
-      for (const data of this.seedData) {
-        await this.create(env, data);
-      }
-    }
+  static async hashPassword(password: string): Promise<string> {
+    const msgUint8 = new TextEncoder().encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
+}
+export class SessionEntity extends IndexedEntity<SessionInfo> {
+  static readonly entityName = "session";
+  static readonly indexName = "sessions";
+  static readonly initialState: SessionInfo = { sessionId: "", userId: "", expiresAt: 0 };
 }
 export class TenantEntity extends IndexedEntity<Tenant> {
   static readonly entityName = "tenant";
@@ -42,15 +47,21 @@ export class TenantEntity extends IndexedEntity<Tenant> {
     ownerId: "",
     createdAt: 0
   };
-  static generateLicenseKey(): string {
-    const segments = Array.from({ length: 3 }, () =>
-      Math.random().toString(36).substring(2, 6).toUpperCase()
+  static async generateSignature(tenantId: string, key: string): Promise<string> {
+    const secret = "GSM_FLOW_MASTER_SECRET_2025";
+    const enc = new TextEncoder();
+    const keyData = enc.encode(secret);
+    const msg = enc.encode(`${tenantId}:${key}`);
+    const cryptoKey = await crypto.subtle.importKey(
+      "raw", keyData, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
     );
-    return `GSM-${segments.join('-')}`;
+    const signature = await crypto.subtle.sign("HMAC", cryptoKey, msg);
+    return btoa(String.fromCharCode(...new Uint8Array(signature)));
   }
   static async createForUser(env: any, data: { name: string; domain: string; ownerId: string }): Promise<Tenant> {
     const id = crypto.randomUUID();
-    const key = this.generateLicenseKey();
+    const key = `GSM-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const signature = await this.generateSignature(id, key);
     const tenant: Tenant = {
       ...data,
       id,
@@ -59,45 +70,32 @@ export class TenantEntity extends IndexedEntity<Tenant> {
       license: {
         key,
         issuedAt: Date.now(),
-        signature: btoa(id + key).substring(0, 16)
+        signature
       },
       createdAt: Date.now()
     };
-    console.log(`[Authority Node] Provisioning new GSM Tenant: ${tenant.name} for domain ${tenant.domain}`);
     return await this.create(env, tenant);
+  }
+  static async validateKey(tenant: Tenant, key: string, domain: string): Promise<{ valid: boolean; reason?: string }> {
+    if (tenant.license.key !== key) return { valid: false, reason: "Invalid key" };
+    if (tenant.domain.toLowerCase() !== domain.toLowerCase()) return { valid: false, reason: "Domain mismatch" };
+    if (tenant.status !== 'active') return { valid: false, reason: `Status is ${tenant.status}` };
+    const expectedSig = await this.generateSignature(tenant.id, key);
+    if (tenant.license.signature !== expectedSig) return { valid: false, reason: "Signature corruption" };
+    return { valid: true };
   }
 }
 export class SupportTicketEntity extends IndexedEntity<SupportTicket> {
   static readonly entityName = "ticket";
   static readonly indexName = "tickets";
   static readonly initialState: SupportTicket = {
-    id: "",
-    userId: "",
-    subject: "",
-    message: "",
-    status: "open",
-    category: "general",
-    createdAt: 0
+    id: "", userId: "", subject: "", message: "", status: "open", category: "general", createdAt: 0
   };
-  static async getTicketsByUser(env: any, userId: string): Promise<SupportTicket[]> {
-    const result = await this.list(env);
-    return (result.items || []).filter(t => t.userId === userId).sort((a, b) => b.createdAt - a.createdAt);
-  }
 }
 export class InvoiceEntity extends IndexedEntity<Invoice> {
   static readonly entityName = "invoice";
   static readonly indexName = "invoices";
   static readonly initialState: Invoice = {
-    id: "",
-    userId: "",
-    amount: 0,
-    date: 0,
-    status: "paid",
-    planName: "",
-    currency: "USD"
+    id: "", userId: "", amount: 0, date: 0, status: "paid", planName: "", currency: "USD"
   };
-  static async getInvoicesByUser(env: any, userId: string): Promise<Invoice[]> {
-    const result = await this.list(env);
-    return (result.items || []).filter(i => i.userId === userId).sort((a, b) => b.date - a.date);
-  }
 }

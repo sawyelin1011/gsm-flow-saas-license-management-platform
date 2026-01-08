@@ -1,36 +1,39 @@
 import type { ApiResponse } from "@shared/types";
-/**
- * Enhanced API client with robust error handling for network failures,
- * worker cold starts, and structured API errors.
- */
+const AUTH_KEY = 'gsm_flow_token';
+export function setAuthToken(token: string) {
+  localStorage.setItem(AUTH_KEY, token);
+}
+export function getAuthToken() {
+  return localStorage.getItem(AUTH_KEY);
+}
+export function clearAuthToken() {
+  localStorage.removeItem(AUTH_KEY);
+}
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getAuthToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  };
   try {
-    const res = await fetch(path, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      ...init
-    });
-    let json: ApiResponse<T>;
-    try {
-      json = (await res.json()) as ApiResponse<T>;
-    } catch (parseError) {
-      console.error('[API CLIENT] Parse Error:', parseError);
-      throw new Error(`Invalid server response (Status: ${res.status})`);
+    const res = await fetch(path, { ...init, headers: { ...headers, ...init?.headers } });
+    if (res.status === 401) {
+      clearAuthToken();
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+      throw new Error('Session expired');
     }
+    const json = (await res.json()) as ApiResponse<T>;
     if (!res.ok || !json.success || json.data === undefined) {
-      const errorMessage = json.error || `Request failed with status ${res.status}`;
-      console.warn(`[API CLIENT] Error ${res.status}:`, errorMessage);
-      throw new Error(errorMessage);
+      const error = new Error(json.error || `Error ${res.status}`);
+      (error as any).code = json.code;
+      throw error;
     }
     return json.data;
   } catch (err) {
-    if (err instanceof TypeError && err.message === 'Failed to fetch') {
-      console.error('[API CLIENT] Network Error: Check internet connection or CORS settings.');
-      throw new Error('Network error: Unable to reach the licensing authority.');
-    }
-    // Re-throw if it's already an error we processed or a generic error
-    throw err instanceof Error ? err : new Error('An unexpected error occurred');
+    console.error('[API CLIENT ERROR]', err);
+    throw err;
   }
 }

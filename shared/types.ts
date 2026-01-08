@@ -2,6 +2,7 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+  code?: string;
 }
 export interface AppUser {
   id: string;
@@ -12,6 +13,15 @@ export interface AppUser {
 export interface UserProfile extends AppUser {
   plan: Plan;
   tenantCount: number;
+}
+export interface AuthResponse {
+  token: string;
+  user: UserProfile;
+}
+export interface SessionInfo {
+  sessionId: string;
+  userId: string;
+  expiresAt: number;
 }
 export interface Plan {
   id: string;
