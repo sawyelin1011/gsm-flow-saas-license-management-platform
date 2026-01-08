@@ -40,7 +40,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const profile = await new UserEntity(c.env, user.id).getProfile(c.env);
     return ok(c, { token, user: profile });
   });
-  // Protected Routes
+  // Protected User Routes
   app.get('/api/me', async (c) => {
     const uid = await getAuth(c);
     if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
@@ -78,6 +78,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   app.post('/api/validate-license', async (c) => {
     const { key, domain } = await c.req.json();
+    if (!key || !domain) return bad(c, 'Key and domain required');
     const page = await TenantEntity.list(c.env);
     const tenant = page.items.find(t => t.license?.key === key);
     if (!tenant) return ok(c, { valid: false, reason: 'License not found' });
@@ -110,6 +111,23 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tickets = await SupportTicketEntity.list(c.env);
     return ok(c, tickets.items.filter(t => t.userId === uid));
   });
+  app.post('/api/support', async (c) => {
+    const uid = await getAuth(c);
+    if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
+    const { subject, message, category } = await c.req.json();
+    if (!subject || !message) return bad(c, 'Missing subject or message');
+    const ticket = await SupportTicketEntity.create(c.env, {
+      id: crypto.randomUUID(),
+      userId: uid,
+      subject,
+      message,
+      status: 'open',
+      category: category || 'general',
+      createdAt: Date.now()
+    });
+    return ok(c, ticket);
+  });
+  // Admin Routes
   app.get('/api/admin/stats', async (c) => {
     const uid = await getAuth(c);
     if (uid !== 'admin-demo') return bad(c, 'Admin only');
@@ -121,5 +139,28 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
       revenue: 0,
       health: 'Nominal'
     });
+  });
+  app.get('/api/admin/users', async (c) => {
+    const uid = await getAuth(c);
+    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    const users = await UserEntity.list(c.env);
+    return ok(c, users.items);
+  });
+  app.post('/api/admin/users/:id/plan', async (c) => {
+    const uid = await getAuth(c);
+    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    const targetUid = c.req.param('id');
+    const { planId } = await c.req.json();
+    if (!planId) return bad(c, 'Plan ID required');
+    const user = new UserEntity(c.env, targetUid);
+    if (!(await user.exists())) return notFound(c, 'User not found');
+    await user.patch({ planId });
+    return ok(c, { id: targetUid, planId });
+  });
+  app.get('/api/admin/tenants', async (c) => {
+    const uid = await getAuth(c);
+    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    const tenants = await TenantEntity.list(c.env);
+    return ok(c, tenants);
   });
 }

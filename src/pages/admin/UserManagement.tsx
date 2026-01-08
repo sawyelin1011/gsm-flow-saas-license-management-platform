@@ -42,6 +42,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 export function UserManagement() {
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState('');
@@ -161,7 +162,7 @@ export function UserManagement() {
                           </div>
                         </TableCell>
                         <TableCell className="text-muted-foreground text-[10px] font-mono font-black uppercase">
-                          {format(new Date(), 'MMM dd, yyyy')}
+                          {user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy')}
                         </TableCell>
                         <TableCell className="text-right pr-8 py-5">
                           <DropdownMenu>
@@ -170,7 +171,7 @@ export function UserManagement() {
                                 <MoreHorizontal className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-64 glass">
+                            <DropdownMenuContent align="end" className="glass w-64">
                               <DropdownMenuLabel className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 py-3 px-3">GSM Operator Management</DropdownMenuLabel>
                               <DropdownMenuItem onClick={() => window.location.href = `mailto:${user.email}`} className="text-[10px] font-black uppercase py-2.5 focus:bg-primary/5 cursor-pointer px-3">
                                 <Mail className="mr-2 h-4 w-4 text-primary" /> Contact Operator
