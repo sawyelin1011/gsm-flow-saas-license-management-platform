@@ -13,7 +13,10 @@ async function getAuth(c: any): Promise<string | null> {
 }
 async function isAdmin(c: any): Promise<boolean> {
   const uid = await getAuth(c);
-  return uid === 'admin-demo';
+  if (!uid) return false;
+  const user = new UserEntity(c.env, uid);
+  const profile = await user.getProfile(c.env);
+  return profile.isAdmin;
 }
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // Auth
@@ -23,9 +26,9 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     await UserEntity.ensureSeed(c.env);
     const allUsers = await UserEntity.list(c.env);
     if (allUsers.items.some(u => u.email === email)) return bad(c, 'Email already exists');
-    const id = crypto.randomUUID();
-    // Block attempts to claim the admin ID directly
-    if (id === 'admin-demo') return bad(c, 'Reserved ID');
+    const id = crypto.randomUUID() as string;
+    // Cast to string to avoid type overlap check errors with 'admin-demo'
+    if (id === ('admin-demo' as string)) return bad(c, 'Reserved ID');
     const passwordHash = await UserEntity.hashPassword(password);
     const user = await UserEntity.create(c.env, { id, email, name, planId: 'launch', passwordHash });
     const token = crypto.randomUUID();
@@ -79,7 +82,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tid = c.req.param('id');
     const inst = new TenantEntity(c.env, tid);
     const state = await inst.getState();
-    if (state.ownerId !== uid && uid !== 'admin-demo') return bad(c, 'Access denied');
+    if (state.ownerId !== uid && !(await isAdmin(c))) return bad(c, 'Access denied');
     await TenantEntity.delete(c.env, tid);
     return ok(c, { id: tid, deleted: true });
   });

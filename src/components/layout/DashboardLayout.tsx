@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, CreditCard, Settings, LogOut, Zap, ChevronRight, HelpCircle, BarChart3, Key, Play, Loader2
+  LayoutDashboard, CreditCard, Settings, LogOut, Zap, ChevronRight, HelpCircle, BarChart3, Key, Play, Loader2, Menu
 } from 'lucide-react';
 import {
   SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarRail, SidebarSeparator, SidebarTrigger,
@@ -51,10 +51,18 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
   const isAdmin = profile?.isAdmin;
   return (
     <SidebarProvider defaultOpen={true}>
-      <Sidebar collapsible="icon" className="border-r border-border/50">
-        <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
+      {/* 
+          Custom Mobile Sidebar Behavior: 
+          On mobile (<768px), we use a strictly docked 64px width (icon-only).
+          On desktop, we use the standard shadcn collapsible behavior.
+      */}
+      <Sidebar 
+        collapsible="icon" 
+        className="border-r border-border/50 md:w-64"
+      >
+        <SidebarHeader className="p-4 border-b border-border/30 flex items-center justify-center md:justify-start gap-3">
           <Zap className="w-5 h-5 text-primary shrink-0" />
-          <span className="font-black text-xs uppercase tracking-[0.25em] group-data-[collapsible=icon]:hidden text-nowrap">
+          <span className="font-black text-xs uppercase tracking-[0.25em] hidden md:inline text-nowrap">
             GSM AUTHORITY
           </span>
         </SidebarHeader>
@@ -65,11 +73,15 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href}
-                  className={cn(pathname === item.href && "text-primary bg-primary/10 font-bold")}
+                  className={cn(
+                    "flex items-center justify-center md:justify-start gap-3",
+                    pathname === item.href && "text-primary bg-primary/10 font-bold"
+                  )}
+                  tooltip={item.title}
                 >
                   <Link to={item.href}>
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.title}</span>
+                    <item.icon className="w-4 h-4 shrink-0" />
+                    <span className="hidden md:inline">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -80,28 +92,44 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
               <SidebarSeparator className="my-4 mx-2" />
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === '/dashboard/admin'}>
-                    <Link to="/dashboard/admin"><BarChart3 className="w-4 h-4" /> <span>Authority Console</span></Link>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={pathname === '/dashboard/admin'}
+                    className="flex items-center justify-center md:justify-start gap-3"
+                    tooltip="Authority Console"
+                  >
+                    <Link to="/dashboard/admin">
+                      <BarChart3 className="w-4 h-4 shrink-0" /> 
+                      <span className="hidden md:inline">Authority Console</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={pathname === '/dashboard/admin/users'}>
-                    <Link to="/dashboard/admin/users"><BarChart3 className="w-4 h-4" /> <span>Operator Registry</span></Link>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={pathname === '/dashboard/admin/users'}
+                    className="flex items-center justify-center md:justify-start gap-3"
+                    tooltip="Operator Registry"
+                  >
+                    <Link to="/dashboard/admin/users">
+                      <BarChart3 className="w-4 h-4 shrink-0" /> 
+                      <span className="hidden md:inline">Operator Registry</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </>
           )}
         </SidebarContent>
-        <SidebarRail />
+        <SidebarRail className="hidden md:block" />
       </Sidebar>
-      <SidebarInset className="bg-muted/5 flex flex-col">
+      <SidebarInset className="bg-muted/5 flex flex-col min-w-0">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 md:px-6 backdrop-blur-md">
           <div className="flex items-center gap-4">
-            <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors" />
-            <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+            <SidebarTrigger className="hidden md:flex h-9 w-9 text-muted-foreground hover:text-primary transition-colors" />
+            <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 truncate max-w-[180px] sm:max-w-none">
               <ChevronRight className="w-3 h-3 text-primary hidden sm:block" />
-              GSM Operator Console
+              GSM Console
             </h2>
           </div>
           <div className="flex items-center gap-3">
@@ -110,7 +138,9 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
               <p className="text-[9px] text-muted-foreground font-bold uppercase">{profile?.plan.name}</p>
             </div>
             <ThemeToggle className="static" />
-            <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:text-destructive transition-colors"><LogOut className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:text-destructive transition-colors">
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">
