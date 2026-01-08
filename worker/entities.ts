@@ -20,7 +20,8 @@ export class UserEntity extends IndexedEntity<AppUser & { passwordHash: string }
       email: state.email,
       planId: state.planId,
       plan,
-      tenantCount: userTenants.length
+      tenantCount: userTenants.length,
+      isAdmin: state.id === 'admin-demo'
     };
   }
   static async hashPassword(password: string): Promise<string> {
@@ -29,12 +30,10 @@ export class UserEntity extends IndexedEntity<AppUser & { passwordHash: string }
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
   }
-
   static async verifyPassword(password: string, storedHash: string): Promise<boolean> {
     const pwHash = await UserEntity.hashPassword(password);
     return pwHash === storedHash;
   }
-
   static async ensureSeed(env: any) {
     const page = await UserEntity.list(env);
     if (page.items.length === 0) {

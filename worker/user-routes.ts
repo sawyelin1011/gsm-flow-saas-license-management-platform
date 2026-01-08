@@ -11,6 +11,10 @@ async function getAuth(c: any): Promise<string | null> {
   if (!state.userId || state.expiresAt < Date.now()) return null;
   return state.userId;
 }
+async function isAdmin(c: any): Promise<boolean> {
+  const uid = await getAuth(c);
+  return uid === 'admin-demo';
+}
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
   // Auth
   app.post('/api/auth/signup', async (c) => {
@@ -20,6 +24,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const allUsers = await UserEntity.list(c.env);
     if (allUsers.items.some(u => u.email === email)) return bad(c, 'Email already exists');
     const id = crypto.randomUUID();
+    // Block attempts to claim the admin ID directly
+    if (id === 'admin-demo') return bad(c, 'Reserved ID');
     const passwordHash = await UserEntity.hashPassword(password);
     const user = await UserEntity.create(c.env, { id, email, name, planId: 'launch', passwordHash });
     const token = crypto.randomUUID();
@@ -45,7 +51,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const uid = await getAuth(c);
     if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
     const user = new UserEntity(c.env, uid);
-    return ok(c, await user.getProfile(c.env));
+    const profile = await user.getProfile(c.env);
+    return ok(c, profile);
   });
   app.get('/api/tenants', async (c) => {
     const uid = await getAuth(c);
@@ -72,7 +79,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const tid = c.req.param('id');
     const inst = new TenantEntity(c.env, tid);
     const state = await inst.getState();
-    if (state.ownerId !== uid) return bad(c, 'Access denied');
+    if (state.ownerId !== uid && uid !== 'admin-demo') return bad(c, 'Access denied');
     await TenantEntity.delete(c.env, tid);
     return ok(c, { id: tid, deleted: true });
   });
@@ -129,8 +136,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   });
   // Admin Routes
   app.get('/api/admin/stats', async (c) => {
-    const uid = await getAuth(c);
-    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    if (!await isAdmin(c)) return bad(c, 'Admin only');
     const users = await UserEntity.list(c.env);
     const tenants = await TenantEntity.list(c.env);
     return ok(c, {
@@ -141,14 +147,12 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
   });
   app.get('/api/admin/users', async (c) => {
-    const uid = await getAuth(c);
-    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    if (!await isAdmin(c)) return bad(c, 'Admin only');
     const users = await UserEntity.list(c.env);
     return ok(c, users.items);
   });
   app.post('/api/admin/users/:id/plan', async (c) => {
-    const uid = await getAuth(c);
-    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    if (!await isAdmin(c)) return bad(c, 'Admin only');
     const targetUid = c.req.param('id');
     const { planId } = await c.req.json();
     if (!planId) return bad(c, 'Plan ID required');
@@ -158,8 +162,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     return ok(c, { id: targetUid, planId });
   });
   app.get('/api/admin/tenants', async (c) => {
-    const uid = await getAuth(c);
-    if (uid !== 'admin-demo') return bad(c, 'Admin only');
+    if (!await isAdmin(c)) return bad(c, 'Admin only');
     const tenants = await TenantEntity.list(c.env);
     return ok(c, tenants);
   });

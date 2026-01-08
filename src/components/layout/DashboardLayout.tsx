@@ -5,7 +5,7 @@ import {
   LayoutDashboard, CreditCard, Settings, LogOut, Zap, ChevronRight, HelpCircle, BarChart3, Key, Play, Loader2
 } from 'lucide-react';
 import {
-  SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarRail, SidebarSeparator,
+  SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarRail, SidebarSeparator, SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -48,13 +48,13 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
       </div>
     );
   }
-  const isAdmin = profile?.id === 'admin-demo';
+  const isAdmin = profile?.isAdmin;
   return (
     <SidebarProvider defaultOpen={true}>
       <Sidebar collapsible="icon" className="border-r border-border/50">
         <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
           <Zap className="w-5 h-5 text-primary shrink-0" />
-          <span className="font-black text-xs uppercase tracking-[0.25em] group-data-[collapsible=icon]:hidden">
+          <span className="font-black text-xs uppercase tracking-[0.25em] group-data-[collapsible=icon]:hidden text-nowrap">
             GSM AUTHORITY
           </span>
         </SidebarHeader>
@@ -84,6 +84,11 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
                     <Link to="/dashboard/admin"><BarChart3 className="w-4 h-4" /> <span>Authority Console</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={pathname === '/dashboard/admin/users'}>
+                    <Link to="/dashboard/admin/users"><BarChart3 className="w-4 h-4" /> <span>Operator Registry</span></Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </>
           )}
@@ -91,10 +96,11 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
         <SidebarRail />
       </Sidebar>
       <SidebarInset className="bg-muted/5 flex flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-6 backdrop-blur-md">
-          <div className="flex items-center gap-2">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-background/80 px-4 md:px-6 backdrop-blur-md">
+          <div className="flex items-center gap-4">
+            <SidebarTrigger className="h-9 w-9 text-muted-foreground hover:text-primary transition-colors" />
             <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-              <ChevronRight className="w-3 h-3 text-primary" />
+              <ChevronRight className="w-3 h-3 text-primary hidden sm:block" />
               GSM Operator Console
             </h2>
           </div>

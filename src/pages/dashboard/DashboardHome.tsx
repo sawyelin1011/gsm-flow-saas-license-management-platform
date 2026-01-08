@@ -4,11 +4,11 @@ import {
   Activity,
   Server,
   Zap,
-  TrendingUp,
   ShieldCheck,
   ArrowRight,
   Plus,
-  Target
+  Target,
+  RefreshCcw
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 const CHART_DATA = [
   { name: '00:00', validations: 240 },
   { name: '04:00', validations: 580 },
@@ -40,15 +41,17 @@ export function DashboardHome() {
     queryKey: ['me'],
     queryFn: () => api<UserProfile>('/api/me'),
   });
+  const capacityPercentage = profile ? Math.min(100, ((profile.tenantCount || 0) / (profile.plan.tenantLimit || 1)) * 100) : 0;
+  const isNearLimit = capacityPercentage >= 80;
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 lg:py-12">
-      <div className="space-y-8">
+      <div className="space-y-8 animate-fade-in">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="space-y-1">
+          <div className="space-y-1 text-center sm:text-left">
             <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Sovereign Authority Console</h1>
             <p className="text-sm text-muted-foreground font-medium uppercase tracking-tight opacity-70">Unlocking Platform Oversight</p>
           </div>
-          <Button className="btn-gradient font-black h-11 text-[10px] uppercase tracking-widest px-8 shadow-glow" asChild>
+          <Button className="btn-gradient font-black h-11 text-[10px] uppercase tracking-widest px-8 shadow-glow w-full sm:w-auto" asChild>
             <Link to="/dashboard/data"><Plus className="w-4 h-4 mr-2" /> Provision New Platform</Link>
           </Button>
         </div>
@@ -59,10 +62,10 @@ export function DashboardHome() {
           <StatCard title="Sovereign Uptime" value="100%" icon={<ShieldCheck className="w-4 h-4" />} trend="Nominal" />
         </div>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="xl:col-span-2 border-border/50 shadow-soft">
+          <Card className="xl:col-span-2 border-border/50 shadow-soft hover:border-primary/20 transition-colors">
             <CardHeader className="border-b bg-muted/5 py-4 px-6 flex flex-row items-center justify-between">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
-                <Target className="w-3.5 h-3.5 text-primary" /> Authority Sales Throughput
+                <Target className="w-3.5 h-3.5 text-primary" /> Authority Validation Pulse
               </CardTitle>
               <Badge variant="outline" className="text-[8px] uppercase tracking-widest text-primary border-primary/20 bg-primary/5">Real-time Node Pulse</Badge>
             </CardHeader>
@@ -86,9 +89,13 @@ export function DashboardHome() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-border/50 flex flex-col h-full bg-card shadow-soft overflow-hidden">
-            <CardHeader className="border-b bg-muted/5 py-4 px-6">
+          <Card className="border-border/50 flex flex-col h-full bg-card shadow-soft overflow-hidden hover:border-primary/20 transition-colors">
+            <CardHeader className="border-b bg-muted/5 py-4 px-6 flex items-center justify-between">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em]">Authority Capacity</CardTitle>
+              <div className="flex items-center gap-1.5 text-[9px] font-bold text-muted-foreground uppercase">
+                <RefreshCcw className="w-3 h-3 animate-spin-slow" />
+                <span>Last Sync: 1s ago</span>
+              </div>
             </CardHeader>
             <CardContent className="p-8 space-y-8 flex-1 flex flex-col justify-between">
               <div className="space-y-4">
@@ -104,12 +111,20 @@ export function DashboardHome() {
                     {profile?.plan.name || "Launch"}
                   </Badge>
                 </div>
-                <div className="h-2 w-full bg-muted rounded-full overflow-hidden border border-border/50">
+                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden border border-border/50 relative">
                   <div
-                    className="h-full bg-primary transition-all duration-1000 ease-out"
-                    style={{ width: `${Math.min(100, ((profile?.tenantCount || 0) / (profile?.plan.tenantLimit || 1)) * 100)}%` }}
+                    className={cn(
+                      "h-full bg-primary transition-all duration-1000 ease-out",
+                      isNearLimit && "animate-pulse shadow-[0_0_12px_rgba(6,182,212,0.5)]"
+                    )}
+                    style={{ width: `${capacityPercentage}%` }}
                   />
                 </div>
+                {isNearLimit && (
+                   <p className="text-[9px] font-black text-amber-500 uppercase tracking-widest text-center animate-bounce">
+                     Warning: Platform Capacity Threshold Approaching
+                   </p>
+                )}
               </div>
               <div className="space-y-4">
                 <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-muted-foreground/60">Node Pulse Stream</h4>
@@ -141,7 +156,7 @@ export function DashboardHome() {
 }
 function StatCard({ title, value, icon, trend }: { title: string; value: string; icon: React.ReactNode; trend: string }) {
   return (
-    <Card className="border-border/50 p-5 group hover:border-primary/40 transition-all hover:bg-primary/[0.01] cursor-default shadow-soft">
+    <Card className="border-border/50 p-5 group hover:border-primary/40 transition-all hover:bg-primary/[0.01] cursor-default shadow-soft hover:-translate-y-1 duration-300">
       <div className="flex items-center justify-between mb-4">
         <div className="p-2.5 rounded-xl bg-muted text-muted-foreground group-hover:text-primary group-hover:bg-primary/10 transition-all duration-300">
           {icon}

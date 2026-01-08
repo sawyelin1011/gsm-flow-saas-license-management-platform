@@ -13,6 +13,7 @@ export interface AppUser {
 export interface UserProfile extends AppUser {
   plan: Plan;
   tenantCount: number;
+  isAdmin: boolean;
 }
 export interface AuthResponse {
   token: string;
