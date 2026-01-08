@@ -27,7 +27,6 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const allUsers = await UserEntity.list(c.env);
     if (allUsers.items.some(u => u.email === email)) return bad(c, 'Email already exists');
     const id = crypto.randomUUID() as string;
-    // Cast to string to avoid type overlap check errors with 'admin-demo'
     if (id === ('admin-demo' as string)) return bad(c, 'Reserved ID');
     const passwordHash = await UserEntity.hashPassword(password);
     const user = await UserEntity.create(c.env, { id, email, name, planId: 'launch', passwordHash });
@@ -54,6 +53,40 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const uid = await getAuth(c);
     if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
     const user = new UserEntity(c.env, uid);
+    const profile = await user.getProfile(c.env);
+    return ok(c, profile);
+  });
+  app.patch('/api/me', async (c) => {
+    const uid = await getAuth(c);
+    if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
+    const { name, email } = await c.req.json();
+    const user = new UserEntity(c.env, uid);
+    if (!(await user.exists())) return notFound(c, 'User not found');
+    await user.patch({ 
+      ...(name && { name: name.trim() }), 
+      ...(email && { email: email.toLowerCase().trim() }) 
+    });
+    const profile = await user.getProfile(c.env);
+    return ok(c, profile);
+  });
+  app.post('/api/me/plan', async (c) => {
+    const uid = await getAuth(c);
+    if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
+    const { planId } = await c.req.json();
+    if (!planId) return bad(c, 'Plan selection required');
+    const user = new UserEntity(c.env, uid);
+    if (!(await user.exists())) return notFound(c, 'User not found');
+    await user.patch({ planId });
+    // Create an invoice record for the upgrade
+    await InvoiceEntity.create(c.env, {
+      id: `inv-${crypto.randomUUID().slice(0, 8)}`,
+      userId: uid,
+      amount: planId === 'agency' ? 499 : planId === 'growth' ? 149 : 49,
+      date: Date.now(),
+      status: 'paid',
+      planName: planId.charAt(0).toUpperCase() + planId.slice(1) + ' Plan',
+      currency: 'USD'
+    });
     const profile = await user.getProfile(c.env);
     return ok(c, profile);
   });
@@ -113,13 +146,13 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     const uid = await getAuth(c);
     if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
     const invoices = await InvoiceEntity.list(c.env);
-    return ok(c, invoices.items.filter(i => i.userId === uid));
+    return ok(c, invoices.items.filter(i => i.userId === uid).sort((a, b) => b.date - a.date));
   });
   app.get('/api/support', async (c) => {
     const uid = await getAuth(c);
     if (!uid) return c.json({ success: false, error: 'Unauthorized' }, 401);
     const tickets = await SupportTicketEntity.list(c.env);
-    return ok(c, tickets.items.filter(t => t.userId === uid));
+    return ok(c, tickets.items.filter(t => t.userId === uid).sort((a, b) => b.createdAt - a.createdAt));
   });
   app.post('/api/support', async (c) => {
     const uid = await getAuth(c);
