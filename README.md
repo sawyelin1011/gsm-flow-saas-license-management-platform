@@ -1,6 +1,6 @@
 # Cloudflare Workers SaaS Template
 
-[![[cloudflarebutton]]](https://workers.cloudflare.com)
+[![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/sawyelin1011/gsm-flow-saas-license-management-platform)]](https://workers.cloudflare.com)
 
 A production-ready full-stack SaaS starter template powered by Cloudflare Workers. Features a stateful backend using Durable Objects for entities like Users and ChatBoards, paired with a modern React frontend using shadcn/ui, TailwindCSS, TanStack Query, and TypeScript.
 
@@ -102,7 +102,7 @@ Frontend uses `api()` helper in `src/lib/api-client.ts` for type-safe fetches.
    ```
 
 3. **One-Click Deploy**:
-   [![[cloudflarebutton]]](https://workers.cloudflare.com)
+   [![[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/sawyelin1011/gsm-flow-saas-license-management-platform)]](https://workers.cloudflare.com)
 
 **Note**: Ensure `wrangler.jsonc` has your account ID if needed. Durable Objects use SQLite storage (auto-migrates).
 
