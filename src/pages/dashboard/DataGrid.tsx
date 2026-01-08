@@ -14,6 +14,7 @@ import { api } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import type { Tenant, UserProfile } from '@shared/types';
+import { cn } from '@/lib/utils';
 export function DataGrid() {
   const queryClient = useQueryClient();
   const [search, setSearch] = React.useState('');
@@ -28,8 +29,12 @@ export function DataGrid() {
       queryClient.invalidateQueries({ queryKey: ['me'] });
       setIsAddOpen(false);
       toast.success('GSM Tenant provisioned');
-      navigator.clipboard.writeText(newTenant.license.key);
-      toast.info('Signed license key copied to clipboard');
+      if (navigator?.clipboard) {
+        navigator.clipboard.writeText(newTenant.license.key);
+        toast.info('Signed license key copied to clipboard');
+      } else {
+        toast.info('License key: ' + newTenant.license.key);
+      }
     },
     onError: (err: any) => {
       if (err.code === 'PLAN_LIMIT_REACHED') {
@@ -126,7 +131,7 @@ export function DataGrid() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 h-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="glass">
-                        <DropdownMenuItem onClick={() => { navigator.clipboard.writeText(tenant.license.key); toast.success('Key copied'); }} className="text-[10px] font-bold uppercase"><Copy className="mr-2 h-3 w-3" /> Copy Key</DropdownMenuItem>
+                        <DropdownMenuItem onClick={async () => { if (navigator?.clipboard) { await navigator.clipboard.writeText(tenant.license.key); toast.success('Key copied'); } else { toast.info('Key: ' + tenant.license.key); } }} className="text-[10px] font-bold uppercase"><Copy className="mr-2 h-3 w-3" /> Copy Key</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setDeletingId(tenant.id)} className="text-[10px] font-bold uppercase text-destructive"><Trash2 className="mr-2 h-3 w-3" /> Decommission</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

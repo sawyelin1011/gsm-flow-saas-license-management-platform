@@ -16,25 +16,27 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/auth/signup', async (c) => {
     const { email, password, name } = await c.req.json();
     if (!email || !password || !name) return bad(c, 'Missing fields');
+    await UserEntity.ensureSeed(c.env);
     const allUsers = await UserEntity.list(c.env);
     if (allUsers.items.some(u => u.email === email)) return bad(c, 'Email already exists');
     const id = crypto.randomUUID();
     const passwordHash = await UserEntity.hashPassword(password);
     const user = await UserEntity.create(c.env, { id, email, name, planId: 'launch', passwordHash });
     const token = crypto.randomUUID();
-    await SessionEntity.create(c.env, { sessionId: token, userId: id, expiresAt: Date.now() + 86400000 * 7 });
+    await SessionEntity.create(c.env, { id: token, sessionId: token, userId: id, expiresAt: Date.now() + 86400000 * 7 });
     const profile = await new UserEntity(c.env, id).getProfile(c.env);
     return ok(c, { token, user: profile });
   });
   app.post('/api/auth/login', async (c) => {
     const { email, password } = await c.req.json();
+    await UserEntity.ensureSeed(c.env);
     const allUsers = await UserEntity.list(c.env);
     const user = allUsers.items.find(u => u.email === email);
     if (!user) return bad(c, 'Invalid credentials');
-    const hash = await UserEntity.hashPassword(password);
-    if (user.passwordHash !== hash) return bad(c, 'Invalid credentials');
+    const isValid = await UserEntity.verifyPassword(password, user.passwordHash);
+    if (!isValid) return bad(c, 'Invalid credentials');
     const token = crypto.randomUUID();
-    await SessionEntity.create(c.env, { sessionId: token, userId: user.id, expiresAt: Date.now() + 86400000 * 7 });
+    await SessionEntity.create(c.env, { id: token, sessionId: token, userId: user.id, expiresAt: Date.now() + 86400000 * 7 });
     const profile = await new UserEntity(c.env, user.id).getProfile(c.env);
     return ok(c, { token, user: profile });
   });
@@ -77,7 +79,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
   app.post('/api/validate-license', async (c) => {
     const { key, domain } = await c.req.json();
     const page = await TenantEntity.list(c.env);
-    const tenant = page.items.find(t => t.license.key === key);
+    const tenant = page.items.find(t => t.license?.key === key);
     if (!tenant) return ok(c, { valid: false, reason: 'License not found' });
     const validation = await TenantEntity.validateKey(tenant, key, domain);
     if (validation.valid) {
