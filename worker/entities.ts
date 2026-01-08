@@ -33,7 +33,10 @@ export class UserEntity extends IndexedEntity<AppUser & { passwordHash: string }
 export class SessionEntity extends IndexedEntity<SessionInfo> {
   static readonly entityName = "session";
   static readonly indexName = "sessions";
-  static readonly initialState: SessionInfo = { sessionId: "", userId: "", expiresAt: 0 };
+  static readonly initialState: SessionInfo = { id: "", sessionId: "", userId: "", expiresAt: 0 };
+  static override keyOf(state: SessionInfo): string {
+    return state.sessionId;
+  }
 }
 export class TenantEntity extends IndexedEntity<Tenant> {
   static readonly entityName = "tenant";

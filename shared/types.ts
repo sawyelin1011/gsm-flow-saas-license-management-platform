@@ -19,6 +19,7 @@ export interface AuthResponse {
   user: UserProfile;
 }
 export interface SessionInfo {
+  id: string;
   sessionId: string;
   userId: string;
   expiresAt: number;
