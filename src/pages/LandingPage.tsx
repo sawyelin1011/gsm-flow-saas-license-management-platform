@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   ShieldCheck,
@@ -10,17 +10,54 @@ import {
   LayoutDashboard,
   RefreshCw,
   Server,
-  Code2
+  Code2,
+  Cpu,
+  Network
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { cn } from '@/lib/utils';
 export function LandingPage() {
+  useEffect(() => {
+    document.title = "GSM Flow - The Premier GSM Service Licensing Authority";
+  }, []);
   const plans = [
-    { id: 'launch', name: 'Launch Plan', price: 49, features: ['1 GSM Tenant Provisioning', 'Remote Service Management', 'Standard Support', 'Real-time License Validation'] },
-    { id: 'growth', name: 'Growth Plan', price: 149, features: ['10 GSM Tenants', 'Priority Authority Support', 'Automated Service Updates', 'Advanced API Analytics', 'Global Edge Validation'] },
-    { id: 'agency', name: 'Agency Plan', price: 499, features: ['100 GSM Tenants', 'White-label Service Portal', '24/7 Dedicated Support', 'Custom Integration Hooks', 'SLA Guarantee'] }
+    { 
+      id: 'launch', 
+      name: 'Launch Plan', 
+      price: 49, 
+      features: [
+        '1 GSM Tenant Provisioning', 
+        'Remote Service Management', 
+        'Standard Support', 
+        'Real-time License Validation'
+      ] 
+    },
+    { 
+      id: 'growth', 
+      name: 'Growth Plan', 
+      price: 149, 
+      features: [
+        '10 GSM Tenants', 
+        'Priority Authority Support', 
+        'Automated Service Updates', 
+        'Advanced API Analytics', 
+        'Global Edge Validation'
+      ] 
+    },
+    { 
+      id: 'agency', 
+      name: 'Agency Plan', 
+      price: 499, 
+      features: [
+        '100 GSM Tenants', 
+        'White-label Service Portal', 
+        '24/7 Dedicated Support', 
+        'Custom Integration Hooks', 
+        'SLA Guarantee'
+      ] 
+    }
   ];
   const scrollToPricing = () => {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
@@ -59,21 +96,39 @@ export function LandingPage() {
             </Button>
           </div>
         </section>
+        {/* Who/What/How Section */}
+        <section className="py-24 grid md:grid-cols-3 gap-12 border-y border-border/50">
+          <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-primary">Who is it for?</h3>
+            <p className="text-lg font-bold leading-tight">Hardware Service Providers & Remote Cluster Operators.</p>
+            <p className="text-muted-foreground text-sm font-medium">Designed specifically for businesses managing large-scale GSM hardware deployments that require centralized authority and secure tenant isolation.</p>
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-primary">What is GSM Flow?</h3>
+            <p className="text-lg font-bold leading-tight">The Centralized Licensing Authority for GSM Networks.</p>
+            <p className="text-muted-foreground text-sm font-medium">GSM Flow provides the commercial and administrative layer for self-hosted GSM services, handling licensing, billing, and tenant management without touching the core hardware logic.</p>
+          </div>
+          <div className="space-y-4">
+            <h3 className="text-sm font-black uppercase tracking-widest text-primary">How it works?</h3>
+            <p className="text-lg font-bold leading-tight">Provision. Sign. Validate. Repeat.</p>
+            <p className="text-muted-foreground text-sm font-medium">Create a tenant, bind it to a domain, generate a cryptographically signed license key, and validate it in real-time from your service nodes using our global Edge API.</p>
+          </div>
+        </section>
         {/* Workflow Section */}
-        <section className="py-24 bg-muted/30 rounded-[3rem] p-12 mb-24 border border-border/50">
+        <section className="py-24 bg-muted/30 rounded-[3rem] p-8 md:p-12 my-24 border border-border/50">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter">The Authority Protocol</h2>
             <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Complete control from provisioning to validation.</p>
           </div>
-          <div className="grid md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <WorkflowItem icon={<Lock />} title="License Management" desc="Generate unique, cryptographically secure keys for every installation." />
-            <WorkflowItem icon={<Server />} title="Tenant Provisioning" desc="Onboard new service clusters with automated domain binding." />
-            <WorkflowItem icon={<LayoutDashboard />} title="Operator Portal" desc="Manage subscriptions and monitor global fleet health from one console." />
+            <WorkflowItem icon={<Server />} title="Tenant Registry" desc="Onboard new service clusters with automated domain binding." />
+            <WorkflowItem icon={<LayoutDashboard />} title="GSM Operator Portal" desc="Manage subscriptions and monitor global fleet health from one console." />
             <WorkflowItem icon={<RefreshCw />} title="Real-time Updates" desc="Push critical service updates and manage node states remotely." />
           </div>
         </section>
         {/* Features Section */}
-        <section className="py-24 border-t border-border/50 grid grid-cols-1 md:grid-cols-3 gap-12">
+        <section className="py-24 grid grid-cols-1 md:grid-cols-3 gap-12">
           <FeatureCard
             icon={<Globe className="w-8 h-8" />}
             title="Global Edge Validation"
@@ -81,13 +136,13 @@ export function LandingPage() {
           />
           <FeatureCard
             icon={<ShieldCheck className="w-8 h-8" />}
-            title="Sovereign Control"
-            description="You own the registry. Revoke, suspend, or upgrade service licenses instantly with a single click from your operator portal."
+            title="Tenant Authority"
+            description="You own the registry. Revoke, suspend, or upgrade service licenses instantly with a single click from your GSM Operator portal."
           />
           <FeatureCard
             icon={<Code2 className="w-8 h-8" />}
-            title="SDK Integration"
-            description="Drop-in authorization libraries for Go, Python, and Node.js to secure your GSM server cluster logic."
+            title="Sovereign SDK"
+            description="Drop-in authorization libraries for Go, Python, and Node.js to secure your GSM server cluster logic with ease."
           />
         </section>
         {/* Pricing Section */}
@@ -124,8 +179,19 @@ export function LandingPage() {
             ))}
           </div>
         </section>
-        <footer className="py-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-widest border-t border-border/50">
-          © {new Date().getFullYear()} GSM Flow Licensing Authority · All Rights Reserved.
+        <footer className="py-12 border-t border-border/50 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-primary" />
+            <span className="text-sm font-black uppercase tracking-widest">GSM FLOW</span>
+          </div>
+          <div className="flex gap-8 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <a href="/docs" className="hover:text-primary transition-colors">API Reference</a>
+            <a href="#" className="hover:text-primary transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
+          </div>
+          <div className="text-center text-muted-foreground text-[10px] font-bold uppercase tracking-widest">
+            © {new Date().getFullYear()} GSM Flow Licensing Authority.
+          </div>
         </footer>
       </div>
     </div>
@@ -137,14 +203,14 @@ function WorkflowItem({ icon, title, desc }: { icon: React.ReactNode, title: str
       <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto text-2xl font-black border border-primary/20">
         {icon}
       </div>
-      <h3 className="font-bold text-sm uppercase tracking-tight">{title}</h3>
-      <p className="text-xs text-muted-foreground leading-relaxed font-medium">{desc}</p>
+      <h3 className="font-bold text-xs uppercase tracking-tight">{title}</h3>
+      <p className="text-[10px] text-muted-foreground leading-relaxed font-medium">{desc}</p>
     </div>
   );
 }
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
-    <div className="space-y-4 group">
+    <div className="space-y-4 group p-6 rounded-2xl hover:bg-muted/30 transition-colors">
       <div className="text-primary group-hover:scale-110 transition-transform duration-300">{icon}</div>
       <h3 className="text-2xl font-black tracking-tighter uppercase">{title}</h3>
       <p className="text-muted-foreground leading-relaxed font-medium">{description}</p>

@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, Link, useLocation, Outlet } from 'react-router-dom';
 import {
-  LayoutDashboard, CreditCard, Settings, LogOut, Zap, ChevronRight, HelpCircle, BarChart3, Users, BookOpen, Key, Play, Loader2
+  LayoutDashboard, CreditCard, Settings, LogOut, Zap, ChevronRight, HelpCircle, BarChart3, Key, Play, Loader2
 } from 'lucide-react';
 import {
   SidebarProvider, Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset, SidebarRail, SidebarSeparator,
@@ -15,10 +15,10 @@ import type { UserProfile } from '@shared/types';
 const MENU_ITEMS = [
   { title: 'Tenant Registry', icon: LayoutDashboard, href: '/dashboard' },
   { title: 'License Management', icon: Key, href: '/dashboard/data' },
-  { title: 'Test Bench', icon: Play, href: '/dashboard/test' },
-  { title: 'Billing', icon: CreditCard, href: '/dashboard/billing' },
-  { title: 'Support', icon: HelpCircle, href: '/dashboard/support' },
-  { title: 'Settings', icon: Settings, href: '/dashboard/settings' },
+  { title: 'GSM Service Test Bench', icon: Play, href: '/dashboard/test' },
+  { title: 'Billing & Tiers', icon: CreditCard, href: '/dashboard/billing' },
+  { title: 'GSM Support', icon: HelpCircle, href: '/dashboard/support' },
+  { title: 'Operator Settings', icon: Settings, href: '/dashboard/settings' },
 ];
 export function DashboardLayout({ children }: { children?: React.ReactNode }) {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center gap-4 bg-background">
         <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Authenticating Authority...</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Authenticating GSM Operator...</p>
       </div>
     );
   }
@@ -54,8 +54,8 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
       <Sidebar collapsible="icon" className="border-r border-border/50">
         <SidebarHeader className="p-4 border-b border-border/30 flex items-center gap-3">
           <Zap className="w-5 h-5 text-primary shrink-0" />
-          <span className="font-black text-xs uppercase tracking-[0.2em] group-data-[collapsible=icon]:hidden">
-            GSM Authority
+          <span className="font-black text-xs uppercase tracking-[0.25em] group-data-[collapsible=icon]:hidden">
+            GSM AUTHORITY
           </span>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -81,7 +81,7 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={pathname === '/dashboard/admin'}>
-                    <Link to="/dashboard/admin"><BarChart3 className="w-4 h-4" /> <span>Admin Console</span></Link>
+                    <Link to="/dashboard/admin"><BarChart3 className="w-4 h-4" /> <span>Authority Console</span></Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -95,7 +95,7 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
               <ChevronRight className="w-3 h-3 text-primary" />
-              Authority Console
+              GSM Operator Console
             </h2>
           </div>
           <div className="flex items-center gap-3">
@@ -104,10 +104,10 @@ export function DashboardLayout({ children }: { children?: React.ReactNode }) {
               <p className="text-[9px] text-muted-foreground font-bold uppercase">{profile?.plan.name}</p>
             </div>
             <ThemeToggle className="static" />
-            <Button variant="ghost" size="icon" onClick={handleLogout}><LogOut className="w-4 h-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={handleLogout} className="hover:text-destructive transition-colors"><LogOut className="w-4 h-4" /></Button>
           </div>
         </header>
-        <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto">
           {children || <Outlet />}
         </main>
       </SidebarInset>
